@@ -1,8 +1,10 @@
 <template>
+    <NoteBook/>
 </template>
 
-<script>
+<script setup>
+    import NoteBook from './components/notebook/NoteBook.vue';
 </script>
 
-<style>
+<style scoped>
 </style>
