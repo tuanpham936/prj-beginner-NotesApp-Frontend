@@ -1,16 +1,16 @@
 <template>
     <div>
         <header class="sticky-header">
-            
+
         </header>
 
         <div class="layout-container">
             <aside class="sidebar left sticky-scrollable">
-                <notefolder v-for="folder in folders" :name="folder.name" :files="folder.files"/>
+				<notesFolder v-for="folder in folders" :folder-name="folder.name"  @edit-folder-name="UpdateFolderName" @remove-folder="RemoveFolder"/>
             </aside>
 
             <main class="main-content">
-                <writenote/>
+                <writenote v-model:content="noteContent" @edit-note="UpdateNote"/>
             </main>
 
             <aside class="sidebar right sticky-scrollable">
@@ -18,36 +18,37 @@
             </aside>
         </div>
     </div>
-
 </template>
 
 <script setup>
-    import { ref } from 'vue';
-    const folders = ref([
-        {
-        name: 'Menu 1',
-        files: [
-            {
-                name: 'File 1'
-            },
-            {
-                name: 'File 2'
-            }
-        ]},
-        {
-        name: 'Menu 2',
-        files: [
-            {
-                name: 'File 3'
-            },
-            {
-                name: 'File 4'
-            }
-        ]},
-    ]);
+	//import
+	import writenote from './WriteNote.vue';
+	import notesFolder from './NotesFolder.vue';
+	import { ref } from 'vue'; //Declare primitive variables
+	import { reactive } from 'vue'; //Declare object, array variables
 
-    import writenote from './WriteNote.vue';
-    import notefolder from './NoteFolder.vue';
+	//data
+	const noteContent = ref('');
+	const folders = reactive([
+		{
+			name: 'Folder A',
+			files: null,
+		},
+	]);
+
+	function UpdateNote(newNote) {
+		noteContent.value = newNote;
+	}
+
+	function UpdateFolderName(oldName, newName) {
+		const folder = folders.find(f => f.name === oldName);
+		folder.name = newName;
+	}
+
+	function RemoveFolder(name) {
+		const index = folders.findIndex(f => f.name === name);
+		folders.splice(index, 1);
+	}
 </script>
 
 <style scoped>
