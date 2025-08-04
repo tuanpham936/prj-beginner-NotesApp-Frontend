@@ -12,12 +12,11 @@
                 </ul>
             </div>
         </div>
-
-        
     </div>
     <ul class="subfiles" v-show="enableSubfiles">
-        <noteFile/>
+        <noteFile v-for="file in files" :file-name="file.name" :id="file.id" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile" />
     </ul>
+    <br>
 </template>
 
 <script setup>
@@ -32,11 +31,14 @@
         folderName: {
             Type: String,
             default: 'New Folder',
+        },
+        files: {
+            Type: Array,
         }
     });
     const enableNameEdit = ref(false);
     const inputName = ref(null);
-    const emits = defineEmits(['editFolderName', 'removeFolder']);
+    const emits = defineEmits(['editFolderName', 'removeFolder', 'fileChangeFolder', 'removeFile', 'openFile']);
 
     //func
     function ToggleSubfiles() {
@@ -66,6 +68,18 @@
         UnactiveOptionsMenu();
         ToggleSubfiles();
         emits('removeFolder', props.folderName);
+    }
+
+    function FileChangeFolder(fileID) {
+        emits('fileChangeFolder', fileID, props.folderName);
+    }
+
+    function RemoveFile(fileID) {
+        emits('removeFile', fileID, props.folderName);
+    }
+
+    function OpenFile(fileID) {
+        emits('openFile', fileID);
     }
 </script>
 

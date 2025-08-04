@@ -1,13 +1,13 @@
 <template>
     <div class="file-button-wrapper">
-        <div class="file-button" @click.left="ToggleSubfiles">
-            <i class="fa-solid fa-folder"></i>
-            <div class="file-name" type="text" text="File A"></div>
+        <div class="file-button" @click.left="OpenFile">
+            <i class="fa-solid fa-file"></i>
+            <div class="file-name" type="text" >{{ fileName }}</div>
             <div class="side-button" @mouseover="ActiveOptionsMenu" @mouseleave="UnactiveOptionsMenu">
                 <i class="fa-solid fa-bars"></i>
                 <ul class="file-options-menu" v-show="enableOptionsMenu">
-                    <li class="menu-item"><i class="fa-solid fa-pen"></i> Rename</li>
-                    <li class="menu-item"><i class="fa-solid fa-trash"></i> Remove</li>
+                    <li class="menu-item" @click.left="ChangeFolder"><i class="fa-solid fa-folder-tree"></i> Change Folder</li>
+                    <li class="menu-item" @click.left="RemoveFile"><i class="fa-solid fa-trash"></i> Remove</li>
                 </ul>
             </div>
         </div>
@@ -21,6 +21,18 @@
     
     //var                                                                                           
     const enableOptionsMenu = ref(false);
+    const props = defineProps({
+        fileName: {
+            Type: String,
+            default: 'New File',
+        },
+        id: {
+            Type: String,
+            required: true,
+        }
+
+    });
+    const emits = defineEmits(['fileChangeFolder', 'removeFile', 'openFile']);
 
     //func
     function ActiveOptionsMenu() {
@@ -29,6 +41,18 @@
 
     function UnactiveOptionsMenu() {
         enableOptionsMenu.value = false;
+    }
+
+    function ChangeFolder() {
+        emits('fileChangeFolder', props.id);
+    }
+
+    function RemoveFile() {
+        emits('removeFile', props.id);
+    }
+
+    function OpenFile() {
+        emits('openFile', props.id);
     }
 </script>
 
