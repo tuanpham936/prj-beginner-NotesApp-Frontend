@@ -3,7 +3,7 @@
         <!-- <textarea class="title-textarea" placeholder="Tiêu đề..." :value="title" v-on:keydown.tab.prevent="tabIndent" @input="editNote"></textarea>
 		<br>
 		<hr> -->
-        <textarea class="lined-textarea" placeholder="Nội dung..." :value="content" v-on:keydown.tab.prevent="tabIndent" @input="editNote"></textarea>
+        <div contenteditable="true" class="lined-textarea" placeholder="Nội dung..." v-html="content" v-on:keydown.tab.prevent="tabIndent" @input="editNote"></div>
     </div>
 </template>
 
@@ -27,7 +27,10 @@
 	const emits = defineEmits(['editNote']);
 
 	function editNote(e) {
-		emits('editNote', e.target.value);
+		const start = textarea.selectionStart;
+		const length = e.target.innerHTML.length - content.length;
+		emits('editNote', e.target.innerHTML);
+		textarea.selectionStart = textarea.selectionEnd = start + length;
 	}
 </script>
 

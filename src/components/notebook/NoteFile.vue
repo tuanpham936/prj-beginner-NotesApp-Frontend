@@ -1,12 +1,12 @@
 <template>
     <div class="file-button-wrapper">
-        <div class="file-button" @click.left="OpenFile">
+        <div class="file-button" @click.left.self="OpenFile">
             <i class="fa-solid fa-file"></i>
             <div class="file-name" type="text" >{{ fileName }}</div>
             <div class="side-button" @mouseover="ActiveOptionsMenu" @mouseleave="UnactiveOptionsMenu">
                 <i class="fa-solid fa-bars"></i>
                 <ul class="file-options-menu" v-show="enableOptionsMenu">
-                    <li class="menu-item" @click.left="ChangeFolder"><i class="fa-solid fa-folder-tree"></i> Change Folder</li>
+                    <li class="menu-item" @click.left.stop="ChangeFolder"><i class="fa-solid fa-folder-tree"></i> Change Folder</li>
                     <li class="menu-item" @click.left="RemoveFile"><i class="fa-solid fa-trash"></i> Remove</li>
                 </ul>
             </div>
@@ -61,6 +61,11 @@
     position: relative;
 }
 
+.file-button-wrapper:hover .file-button {
+    background-color: #9bb2c4;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
 .file-button {
     display: flex;
     align-items: center;
@@ -73,6 +78,7 @@
     max-width: 100%;
     cursor: pointer;
     overflow-wrap: normal;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .file-button:hover .side-button {

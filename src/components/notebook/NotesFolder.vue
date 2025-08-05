@@ -1,6 +1,6 @@
 <template>
     <div class="folder-button">
-        <div class="wide-input-button" @click.left="ToggleSubfiles">
+        <div class="wide-input-button" @click.left.self="ToggleSubfiles">
             <i class="fa-solid fa-folder"></i>
             <input class="readonly-name" ref="inputName" type="text" :value="folderName" :readonly="!enableNameEdit" @blur="UnactiveEditName" />
 
@@ -14,6 +14,7 @@
         </div>
     </div>
     <ul class="subfiles" v-show="enableSubfiles">
+        <li v-show="files.length == 0" class="empty-msg">Folder is empty</li>
         <noteFile v-for="file in files" :file-name="file.name" :id="file.id" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile" />
     </ul>
     <br>
@@ -24,10 +25,17 @@
     import { ref } from 'vue';
     import noteFile from './NoteFile.vue';
 
+    //expose
+    defineExpose({ActiveEditName});
+
     //var
     const enableSubfiles = ref(false);
     const enableOptionsMenu = ref(false);
     const props = defineProps({
+        id: {
+            Type: String,
+            required: true,
+        },
         folderName: {
             Type: String,
             default: 'New Folder',
@@ -55,27 +63,27 @@
 
     function ActiveEditName() {
         UnactiveOptionsMenu();
-        ToggleSubfiles();
+        enableSubfiles.value = false;
         enableNameEdit.value = true;
         inputName.value?.focus();
     }
 
     function UnactiveEditName(e) {
-        emits('editFolderName', props.folderName, e.target.value);
+        emits('editFolderName', props.id, e.target.value);
     }
 
     function RemoveFolder() {
         UnactiveOptionsMenu();
         ToggleSubfiles();
-        emits('removeFolder', props.folderName);
+        emits('removeFolder', props.id);
     }
 
     function FileChangeFolder(fileID) {
-        emits('fileChangeFolder', fileID, props.folderName);
+        emits('fileChangeFolder', fileID, props.id);
     }
 
     function RemoveFile(fileID) {
-        emits('removeFile', fileID, props.folderName);
+        emits('removeFile', fileID, props.id);
     }
 
     function OpenFile(fileID) {
@@ -88,11 +96,16 @@
     position: relative;
 }
 
+.folder-button:hover .wide-input-button {
+    background-color: #2980b9;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
 .wide-input-button {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    background-color: #2980b9;
+    background-color: #3498db;
     padding: 8px 12px;
     border-radius: 6px;
     gap: 10px;
@@ -101,6 +114,7 @@
     max-width: 100%;
     cursor: pointer;
     overflow-wrap: normal;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .wide-input-button:hover .side-button {
@@ -172,5 +186,16 @@
 
 .folder-options-menu .menu-item:hover {
     background-color: #f1f2f6;
+}
+
+.empty-msg {
+    text-align: center;
+    background-color: #2980b9;
+    padding: 8px 12px;
+    border-radius: 6px;
+    gap: 10px;
+    width: 100%;
+    color: white;
+    max-width: 100%;
 }
 </style>
