@@ -1,0 +1,28 @@
+| Lệnh                                                             | Mô tả                                             |
+| ---------------------------------------------------------------- | ------------------------------------------------- |
+| `bold`                                                           | In đậm chữ đang chọn hoặc con trỏ                 |
+| `italic`                                                         | Chữ nghiêng                                       |
+| `underline`                                                      | Gạch chân                                         |
+| `strikethrough`                                                  | Gạch ngang giữa chữ                               |
+| `superscript`                                                    | Chỉ số trên                                       |
+| `subscript`                                                      | Chỉ số dưới                                       |
+| `removeFormat`                                                   | Xóa hết định dạng trong vùng chọn                 |
+| `copy`                                                           | Sao chép vào clipboard                            |
+| `cut`                                                            | Cắt và lưu vào clipboard                          |
+| `paste`                                                          | Dán nội dung clipboard                            |
+| `undo`                                                           | Hoàn tác (Ctrl + Z)                               |
+| `redo`                                                           | Làm lại (Ctrl + Y)                                |
+| `insertHTML`                                                     | Chèn đoạn HTML tại con trỏ                        |
+| `insertText`                                                     | Chèn văn bản thuần                                |
+| `formatBlock`                                                    | Định dạng block (ví dụ: `"<h1>"`)                 |
+| `fontName`                                                       | Đổi font chữ                                      |
+| `fontSize`                                                       | Định cỡ chữ (giá trị `1–7`)                       |
+| `foreColor`                                                      | Đổi màu chữ                                       |
+| `backColor` hoặc `hiliteColor`                                   | Đổi màu nền chữ                                   |
+| `justifyLeft` / `justifyCenter` / `justifyRight` / `justifyFull` | Căn lề                                            |
+| `indent` / `outdent`                                             | Thụt đầu dòng hoặc ngược lại                      |
+| `insertOrderedList` / `insertUnorderedList`                      | Tạo danh sách có đánh số hoặc không               |
+| `insertHorizontalRule`                                           | Chèn dòng kẻ ngang                                |
+| `createLink`                                                     | Tạo liên kết (cần URI trong value)                |
+| `unlink`                                                         | Xóa link                                          |
+| `selectAll`                                                      | Chọn toàn bộ nội dung trong vùng có thể chỉnh sửa |

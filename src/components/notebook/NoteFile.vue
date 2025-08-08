@@ -58,7 +58,7 @@
 
 <style scoped>
 .file-button-wrapper {
-    position: relative;
+    position: relative; 
 }
 
 .file-button-wrapper:hover .file-button {

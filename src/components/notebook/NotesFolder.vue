@@ -94,6 +94,13 @@
 <style scoped>
 .folder-button {
     position: relative;
+    width: 100%;
+    top: -100%;
+    animation: slide 0.5s forwards;   
+}
+
+@keyframes slide {
+    100% { top: 0; }
 }
 
 .folder-button:hover .wide-input-button {
@@ -109,7 +116,7 @@
     padding: 8px 12px;
     border-radius: 6px;
     gap: 10px;
-    width: fit-content;
+    width: 100%;
     color: white;
     max-width: 100%;
     cursor: pointer;
@@ -157,7 +164,7 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;                   
+    gap: 6px;                
 }
 
 .folder-options-menu {
