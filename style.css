@@ -7,14 +7,19 @@
 
 ol {
 	list-style-type: decimal;
-	padding-left: 10px; 
+	padding-left: 30px; 
+}
+
+ul {
+  padding-left: 20px;
 }
 
 .tooltip {
   position: relative;
   display: inline-block;
-  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+  /* border-bottom: 1px dotted black; */
   font-family:'Courier New', Courier, monospace;
+  text-decoration: 2px underline dotted black;
   color: #006080;
 }
 
@@ -64,3 +69,67 @@ ol {
 a {
   cursor: pointer;
 }
+
+
+.slide-in-anim {
+    animation: slide-in 0.5s forwards;
+}
+
+@keyframes slide-in {
+    from {
+    left: -100%;
+    /* transform: translateX(-100%); */
+    /* opacity: 0; */
+	}
+	to {
+    left: 0%;
+		/* transform: translateX(0); */
+		/* opacity: 1; */
+	}
+}
+
+.slide-out-anim {
+    animation: slide-out 0.5s forwards;
+}
+
+@keyframes slide-out {
+    from {
+    left: 0%;
+    /* opacity: 1; */
+	}
+	to {
+    left: -100%;
+		/* opacity: 0; */
+	}
+}
+
+.slide-down-anim {
+    animation: slide-down 0.5s forwards;
+}
+
+@keyframes slide-down {
+    from {
+    transform: translateY(-100%);
+    opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+.slide-up-anim {
+    animation: slide-up 0.5s forwards;
+}
+
+@keyframes slide-up {
+    from {
+    transform: translateY(0);
+    opacity: 1;
+	}
+	to {
+		transform: translateY(-100%);
+		opacity: 0;
+	}
+}
+

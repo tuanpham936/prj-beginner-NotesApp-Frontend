@@ -21,7 +21,38 @@
 		</div> -->
 	</div>
 
-	<div ref="storage" style="visibility: hidden;">
+	<div ref="storage" style="display: none;">
+		<div ref="noteTable" class="note-table" contenteditable="false">
+			<table contenteditable="true">
+				<tbody>
+					<tr class="note-table-row">
+						<td class="note-table-col"><br></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<button contenteditable="false" class="table-options">
+				<i class="fa-solid fa-chevron-down"></i>
+				<ul class="table-options-menu">
+					<li class="table-menu-item">
+						<i class="fa-solid fa-table icon" style="width: 100%;text-align: center;"> Table</i>
+						<i class="fa-solid fa-left-right button" data-table-mode="expand" @click="AdjustTableMode"></i>
+						<i class="fa-solid fa-trash button" @click="RemoveTable"></i>
+					</li>
+					<li class="table-menu-item">
+						<i class="icon" style="width: 100%;;text-align: center;">Col <span>at</span> <input style="width: 35px;" type="number" name="" class="table-col-numb" min="1" value="1"></i>
+						<i class="fa-solid fa-plus button" @click="AdjustTableCol(true, $event.target)"></i>
+						<i class="fa-solid fa-minus button" @click="AdjustTableCol(false, $event.target)"></i>
+					</li>
+					<li class="table-menu-item">
+						<i class="icon" style="width: 100%;text-align: center;">Row <span>at</span> <input style="width: 35px;" type="number" name="" class="table-row-numb" min="1" value="1"></i>
+						<i class="fa-solid fa-plus button" @click="AdjustTableRow(true, $event.target)"></i>
+						<i class="fa-solid fa-minus button" @click="AdjustTableRow(false, $event.target)"></i>
+					</li>
+				</ul>
+			</button>
+		</div>
+
 		<span ref="linkInput" class="input-tooltip-wrapper">
 			<span v-show="enableLinkInput" class="input-tooltip" contenteditable="false">
 				<span style="user-select: none;" for="URL"><b>URL</b></span>
@@ -68,6 +99,12 @@
 	const cmtRangeStorage = ref(null);
 	const cmtInputBox = ref(null);
 
+	//Selection
+	const selectedRange = ref(null);
+
+	//Table
+	const noteTable = ref(null);
+
 	//func
 	function tabIndent() {
 		document.execCommand('insertText', false, '\t')
@@ -84,6 +121,8 @@
 	function executeCommand(cmd, value) {
 		textarea.value?.focus();
 		const selection = window.getSelection();
+		selection.removeAllRanges();
+		selection.addRange(selectedRange.value);
 
 		if (cmd === 'backColor' || cmd === 'foreColor') 
 		{
@@ -200,7 +239,14 @@
 					Notify('Cannot attach link cross paragraphs', 'alert');
 					return;
 				}
-				const node = range.startContainer;
+				let node = range.startContainer;
+
+				if (range.startContainer.nodeType === Node.TEXT_NODE) {
+					node = range.startContainer;
+				} else {
+					node = range.startContainer.firstChild;
+				}
+			
 				const startOffset = range.startOffset
 				const endOffset = range.endOffset
 
@@ -244,7 +290,13 @@
 					Notify('Cannot attach comment cross paragraphs', 'alert');
 					return;
 				}
-				const node = range.startContainer;
+				let node = range.startContainer;
+
+				if (range.startContainer.nodeType === Node.TEXT_NODE) {
+					node = range.startContainer;
+				} else {
+					node = range.startContainer.firstChild;
+				}
 				const startOffset = range.startOffset
 				const endOffset = range.endOffset
 
@@ -275,6 +327,45 @@
 				ActiveCmtInput();
 			}
 		}
+		else if (cmd === 'createTable') {
+			if (selection.rangeCount > 0) {
+				const range = selection.getRangeAt(0).cloneRange();
+				// if (range.startContainer === range.endContainer) {
+				// 	if (range.startOffset === range.endOffset) {
+				// 		Notify('Cannot attach comment to nothing', 'alert');
+				// 		return;
+				// 	}
+				// }
+				// else {
+				// 	Notify('Cannot attach comment cross paragraphs', 'alert');
+				// 	return;
+				// }
+
+				let node = range.commonAncestorContainer;
+				let parentNode = node.parentElement;
+				if (node.id === 'note-editor') {
+					parentNode = node;
+					node = null;
+				}
+				while (parentNode.id !== 'note-editor') {
+					node = parentNode;
+					parentNode = node.parentElement;
+				}
+				const newLine = document.createElement('div');
+				const newBr = document.createElement('br');
+				newLine.appendChild(newBr);
+				if (node === null) {
+					parentNode.appendChild(newLine.cloneNode(true));
+					parentNode.appendChild(noteTable.value.cloneNode(true));
+					parentNode.appendChild(newLine.cloneNode(true));
+				}
+				else {
+					node.insertAdjacentElement('afterend', newLine.cloneNode(true));
+					node.insertAdjacentElement('afterend', noteTable.value.cloneNode(true));
+					node.insertAdjacentElement('afterend', newLine.cloneNode(true));
+				}
+			}
+		}
 		else {
 			document.execCommand(cmd, false, value);
 		}
@@ -303,12 +394,48 @@
     }
 
 	function AttachLink(e) {
-		const selection = window.getSelection();
-		selection.removeAllRanges()
-		selection.addRange(linkRangeStorage.value)
 		const value = e.target.value;
 		UnactiveLinkInput();
-		executeCommand('createLink', value);
+		const selection = window.getSelection();
+		selection.removeAllRanges();
+		selection.addRange(linkRangeStorage.value);
+
+		if (selection.rangeCount > 0) {
+			const range = selection.getRangeAt(0);
+			let node = range.startContainer;
+
+			if (range.startContainer.nodeType === Node.TEXT_NODE) {
+				node = range.startContainer;
+			} else {
+				node = range.startContainer.firstChild;
+			}
+			
+			const startOffset = range.startOffset
+			const endOffset = range.endOffset
+
+			const text = node.textContent;
+			const before = text.slice(0, startOffset);
+			const after = text.slice(endOffset);
+
+			const beforeNode = document.createTextNode(before);
+			const afterNode = document.createTextNode(after);
+
+			const insertNode = document.createElement('a');
+			insertNode.href = value;
+			insertNode.textContent = selection.toString();
+
+			const parent = node.parentNode;
+
+			parent.replaceChild(afterNode, node);
+			parent.insertBefore(insertNode, afterNode);
+			parent.insertBefore(beforeNode, insertNode);
+
+			const newRange = document.createRange();
+			newRange.setStartAfter(insertNode);
+
+			selection.removeAllRanges();
+			selection.addRange(newRange);
+		}
 	}
 
 	function Notify(msg, type) {
@@ -330,15 +457,21 @@
     }
 
 	function AttachCmt(e) {
+		const value = e.target.value;
+		UnactiveCmtInput();
 		const selection = window.getSelection();
 		selection.removeAllRanges()
 		selection.addRange(cmtRangeStorage.value);
-		const value = e.target.value;
-		UnactiveCmtInput();
 
 		if (selection.rangeCount > 0) {
 			const range = selection.getRangeAt(0);
-			const node = range.startContainer;
+			let node = range.startContainer;
+
+			if (range.startContainer.nodeType === Node.TEXT_NODE) {
+				node = range.startContainer;
+			} else {
+				node = range.startContainer.firstChild;
+			}
 			
 			const startOffset = range.startOffset
 			const endOffset = range.endOffset
@@ -372,6 +505,96 @@
 			selection.removeAllRanges();
 			selection.addRange(newRange);
 		}
+	}
+
+	function getHTMLSelectedRange() {
+		const selection = window.getSelection();
+		if (!selection.rangeCount) return null;
+
+		// const range = selection.getRangeAt(0);
+		// // const node = range.startContainer.parentElement;
+		return selection.getRangeAt(0).cloneRange();
+	}
+
+	document.addEventListener('mouseup', () => {
+		selectedRange.value = getHTMLSelectedRange();
+	});
+
+	//Table 
+	function AdjustTableCol(incs, element) {
+		let menuItemParent = element.parentElement;
+		const index = menuItemParent.firstChild.lastChild.value;
+
+		let table = menuItemParent.parentElement.parentElement.parentElement.firstChild.firstChild;
+
+		const newCol = document.createElement('td');
+		const br = document.createElement('br');
+		newCol.appendChild(br);
+		newCol.classList.add('note-table-col');
+
+		for (let i = 0; i < table.childNodes.length; i++) {
+			const row = table.childNodes[i];
+			
+			if (row.childNodes.length < index - 1) {
+				if (incs) row.appendChild(newCol.cloneNode(true));
+				else row.lastChild.remove();
+			}
+			else {
+				if (incs) row.insertBefore(newCol.cloneNode(true), row.childNodes[index - 1]);
+				else row.childNodes[index - 1].remove();
+			}
+		}
+	}	
+
+	function AdjustTableRow(incs, element) {
+		let menuItemParent = element.parentElement;
+		const index = menuItemParent.firstChild.lastChild.value;
+
+		let table = menuItemParent.parentElement.parentElement.parentElement.firstChild.firstChild;
+
+		const newCol = document.createElement('td');
+		const br = document.createElement('br');
+		newCol.appendChild(br);
+		newCol.classList.add('note-table-col');
+
+		const count = table.firstChild.childNodes.length;
+
+		const newRow = document.createElement('tr');
+		newRow.classList.add('note-table-row');
+
+		for (let i = 0; i < count; i++) {
+			newRow.appendChild(newCol.cloneNode(true));
+		}
+
+		if (table.childNodes.length < index - 1) {
+			if (incs) table.appendChild(newRow);
+			else table.lastChild.remove();
+		}
+		else {
+			if (incs) table.insertBefore(newRow, table.childNodes[index - 1]);
+			else table.childNodes[index - 1].remove();
+		}
+	}	
+
+	function AdjustTableMode(e) {
+		const tableMode = e.target.dataset.tableMode;
+
+		let table = e.target.parentElement.parentElement.parentElement.parentElement.firstChild;
+		
+		if (tableMode === 'expand') {
+			e.target.dataset.tableMode = 'fit';
+			table.style.width = 'fit-content';
+		}
+		else {
+			e.target.dataset.tableMode = 'expand';
+			table.style.width = '100%';
+		}
+	}
+
+	function RemoveTable(e) {
+		let table = e.target.parentElement.parentElement.parentElement.parentElement;
+
+		table.remove();
 	}
 
 </script>
@@ -469,5 +692,100 @@
 	border-style: solid;
 	z-index: 9;
 	border-color: transparent transparent whitesmoke transparent;
+}
+
+.note-table {
+	display: flex;
+	justify-content: center;
+}
+
+.note-table table {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+	border: none;
+	border-spacing: 0;
+	width: 100%;
+}
+
+[contenteditable="true"] :deep(.note-table-row) {
+	outline:1px #000 solid;
+}
+
+[contenteditable="true"] :deep(.note-table-col) {
+	outline:1px #000 solid;
+	padding: 0 2px;
+}
+
+.table-options {
+	box-sizing: border-box;
+    position: absolute;
+    right: -1%;
+	border-radius: 100%;
+	border: none;
+	padding: 1px;
+	width: max-content;
+	cursor: pointer;
+	outline: #333 2px solid;
+	background: none;
+}
+
+.table-options:hover .table-options-menu, .table-options-menu:hover {
+	visibility:visible;
+}
+
+.table-options-menu {
+	visibility: hidden;
+    color: #333;
+    position: absolute;
+	top: 60%;
+	left: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-top: 6px;
+    list-style: none;
+    padding: 6px 0;
+    width: auto;
+    z-index: 100;
+	text-align: left;
+}
+
+.table-options-menu .table-menu-item {
+    padding: 10px 16px;
+    cursor:auto;
+    font-size: auto;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+    position: relative;
+	display: flex;
+	justify-content: space-evenly;
+}
+
+/* .table-options-menu .table-menu-item:hover {
+    background-color: #f1f2f6;
+} */
+
+.table-menu-item .icon {
+	border-right: 2px solid #333;
+}
+
+.table-menu-item i {
+	padding: 5px 10px;
+	font-weight: 900;
+	text-transform: uppercase;
+	font-style: normal;
+	font-family: "Font Awesome 6 Free";
+	margin: auto 0;
+}
+
+.table-menu-item .button {
+    transition: background-color 0.2s ease;
+	cursor: pointer;
+}
+
+.table-menu-item .button:hover {
+    background-color: #dddee0;
 }
 </style>

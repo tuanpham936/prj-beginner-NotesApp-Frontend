@@ -63,8 +63,8 @@
         </div>
         <div>
             <button class="tooltip" @click="exec('attachLink')"><i class="fa-solid fa-link"></i><span class="tooltiptext">Attach link<br>(Ctrl + Q)</span></button>
-            <button class="tooltip"  @click="exec('attachComment')"><i class="fa-solid fa-comment"></i><span class="tooltiptext">Attach comment<br>(Ctrl + W)</span></button>
-            <button class="tooltip"><i class="fa-solid fa-table"></i><span class="tooltiptext">Create Table</span></button>
+            <button class="tooltip" @click="exec('attachComment')"><i class="fa-solid fa-comment"></i><span class="tooltiptext">Attach comment<br>(Ctrl + W)</span></button>
+            <button class="tooltip" @click="exec('createTable')"><i class="fa-solid fa-table"></i><span class="tooltiptext">Create Table</span></button>
         </div>
     </div>
 </template>

@@ -13,7 +13,8 @@
             </div>
         </div>
     </div>
-    <ul class="subfiles" v-show="enableSubfiles">
+
+    <ul ref="subfiles" class="subfiles" v-show="enableSubfiles">
         <li v-show="files.length == 0" class="empty-msg">Folder is empty</li>
         <noteFile v-for="file in files" :file-name="file.name" :id="file.id" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile" />
     </ul>
@@ -48,8 +49,19 @@
     const inputName = ref(null);
     const emits = defineEmits(['editFolderName', 'removeFolder', 'fileChangeFolder', 'removeFile', 'openFile']);
 
+    const subfiles = ref(null);
+
     //func
-    function ToggleSubfiles() {
+    async function ToggleSubfiles() {
+        if (enableSubfiles.value) {
+            subfiles.value.classList.remove('slide-in-anim');
+            subfiles.value.classList.add('slide-out-anim');
+            await wait(500);
+        }
+        else {
+            subfiles.value.classList.remove('slide-out-anim');
+            subfiles.value.classList.add('slide-in-anim');
+        }
         enableSubfiles.value = !enableSubfiles.value;
     }
 
@@ -88,6 +100,11 @@
 
     function OpenFile(fileID) {
         emits('openFile', fileID);
+    }
+
+    //Animation
+    function wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 </script>
 
@@ -164,7 +181,7 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;                
+    gap: 6px;       
 }
 
 .folder-options-menu {

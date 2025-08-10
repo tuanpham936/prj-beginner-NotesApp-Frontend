@@ -127,7 +127,7 @@
     list-style: none;
     padding: 6px 0;
     width: auto;
-    z-index: 1000;
+    z-index: 100;
 }
 
 .file-options-menu .menu-item {
@@ -136,6 +136,7 @@
     font-size: auto;
     transition: background-color 0.2s ease;
     white-space: nowrap;
+    position: relative;
 }
 
 .file-options-menu .menu-item:hover {

@@ -5,29 +5,11 @@
 		</header>	
 
 		<div class="layout-container">
-			<!-- <aside class="sidebar left sticky-scrollable" ref="noteOrganizer">
-				<div class="pill-wrapper" id="pillContainer" @click.left="AddNewFolder">
-					<button class="pill-button" id="pillButton"><i class="fa-solid fa-plus"></i> Add Folder</button>
-				</div>
-				<br>
-				<notesFolder v-for="folder in folders" ref="folderButtons" :id="folder.id" :folder-name="folder.name" :files="folder.files"  @edit-folder-name="UpdateFolderName" @remove-folder="RemoveFolder" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile"/>
-				<notesFolder v-for="folder in folders" ref="folderButtons" :id="folder.id" :folder-name="folder.name" :files="folder.files"  @edit-folder-name="UpdateFolderName" @remove-folder="RemoveFolder" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile"/>
-				<notesFolder v-for="folder in folders" ref="folderButtons" :id="folder.id" :folder-name="folder.name" :files="folder.files"  @edit-folder-name="UpdateFolderName" @remove-folder="RemoveFolder" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile"/>
-				<notesFolder v-for="folder in folders" ref="folderButtons" :id="folder.id" :folder-name="folder.name" :files="folder.files"  @edit-folder-name="UpdateFolderName" @remove-folder="RemoveFolder" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile"/>
-				<notesFolder v-for="folder in folders" ref="folderButtons" :id="folder.id" :folder-name="folder.name" :files="folder.files"  @edit-folder-name="UpdateFolderName" @remove-folder="RemoveFolder" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile"/>
-				<notesFolder v-for="folder in folders" ref="folderButtons" :id="folder.id" :folder-name="folder.name" :files="folder.files"  @edit-folder-name="UpdateFolderName" @remove-folder="RemoveFolder" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile"/>
-				<notesFolder v-for="folder in folders" ref="folderButtons" :id="folder.id" :folder-name="folder.name" :files="folder.files"  @edit-folder-name="UpdateFolderName" @remove-folder="RemoveFolder" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile"/>
-				<notesFolder v-for="folder in folders" ref="folderButtons" :id="folder.id" :folder-name="folder.name" :files="folder.files"  @edit-folder-name="UpdateFolderName" @remove-folder="RemoveFolder" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile"/>
-				<notesFolder v-for="folder in folders" ref="folderButtons" :id="folder.id" :folder-name="folder.name" :files="folder.files"  @edit-folder-name="UpdateFolderName" @remove-folder="RemoveFolder" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile"/>
-			</aside> -->
 			<main class="main-content">
 				<div class="note-editor-wrapper">
 					<writenote style="z-index: 5;" ref="noteEditor" @edit-note="UpdateNote" @notify="Notify"/>
 				</div>
 			</main>
-			<chooseFolderModal v-show="enableChooseFolderModal" :folders="folders" @closeModal="UnactiveModal" @chooseFolder="ChooseChangeFolder"/>
-			<!-- <aside class="sidebar right sticky-scrollable">
-			</aside> -->
 		</div>
 
 		<div ref="sidebar" class="sidebar-overlay slide-out-anim" v-show="enableFolderHier">
@@ -40,6 +22,8 @@
 				<notesFolder v-for="folder in folders" ref="folderButtons" :id="folder.id" :folder-name="folder.name" :files="folder.files"  @edit-folder-name="UpdateFolderName" @remove-folder="RemoveFolder" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile"/>
 			</aside>
 		</div>
+
+		<chooseFolderModal v-show="enableChooseFolderModal" :folders="folders" @closeModal="UnactiveModal" @chooseFolder="ChooseChangeFolder"/>
 		
 	</div>
 	<message v-show="enableMessage" :msg="messageText" :type="messageType" @msg-confirm="UnactiveMessage"/>
@@ -317,36 +301,6 @@ body {
 	width: 15%;
 	position: fixed;
 	z-index: 10;
-}
-
-.slide-in-anim {
-    animation: slide-in 0.5s forwards;
-}
-
-@keyframes slide-in {
-    from {
-    transform: translateX(-100%);
-    opacity: 0;
-	}
-	to {
-		transform: translateX(0);
-		opacity: 1;
-	}
-}
-
-.slide-out-anim {
-    animation: slide-out 0.5s forwards;
-}
-
-@keyframes slide-out {
-    from {
-    transform: translateX(0);
-    opacity: 1;
-	}
-	to {
-		transform: translateX(-100%);
-		opacity: 0;
-	}
 }
 
 .sticky-scrollable {
