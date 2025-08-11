@@ -101,6 +101,14 @@
             e.preventDefault();
             exec('folderhier');
         }
+        if (e.ctrlKey && e.key === 'z') {
+            e.preventDefault();
+            exec('undo');
+        }
+        if (e.ctrlKey && e.key === 'y') {
+            e.preventDefault();
+            exec('redo');
+        }
     }
 
     function exec(cmd) {

@@ -14,7 +14,7 @@
         </div>
     </div>
 
-    <ul ref="subfiles" class="subfiles" v-show="enableSubfiles">
+    <ul ref="subfiles" class="subfiles slide-in-anim" v-show="enableSubfiles">
         <li v-show="files.length == 0" class="empty-msg">Folder is empty</li>
         <noteFile v-for="file in files" :file-name="file.name" :id="file.id" @file-change-folder="FileChangeFolder" @remove-file="RemoveFile" @open-file="OpenFile" />
     </ul>
@@ -54,13 +54,11 @@
     //func
     async function ToggleSubfiles() {
         if (enableSubfiles.value) {
-            subfiles.value.classList.remove('slide-in-anim');
             subfiles.value.classList.add('slide-out-anim');
             await wait(500);
         }
         else {
             subfiles.value.classList.remove('slide-out-anim');
-            subfiles.value.classList.add('slide-in-anim');
         }
         enableSubfiles.value = !enableSubfiles.value;
     }
@@ -182,6 +180,8 @@
     display: flex;
     flex-direction: column;
     gap: 6px;       
+    position: relative;
+    /* left: -100%; */
 }
 
 .folder-options-menu {

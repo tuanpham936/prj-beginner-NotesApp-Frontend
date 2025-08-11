@@ -3,22 +3,8 @@
         <!-- <textarea class="title-textarea" placeholder="Tiêu đề..." :value="title" v-on:keydown.tab.prevent="tabIndent" @input="editNote"></textarea>
 		<br>
 		<hr> -->
-        <div ref="textarea" contenteditable="true" id="note-editor" class="lined-textarea" placeholder="Nội dung..." v-on:keydown.tab.prevent="tabIndent" @click="" @input="editNote">
+        <div ref="textarea" contenteditable="true" id="note-editor" class="lined-textarea" placeholder="Nội dung..." v-on:keydown.tab.prevent="tabIndent" @click="" @input="editNote" @mousedown="">
 		</div>
-		<!-- <div class="lined-textarea bottom-textarea">
-			<p>This is bottom of sheet - Can't write</p>
-			<br>
-			<br>
-			<br>
-			<br>
-			<br>
-			<br>
-			<br>
-			<br>
-			<br>
-			<br>
-			<br>
-		</div> -->
 	</div>
 
 	<div ref="storage" style="display: none;">
@@ -36,18 +22,18 @@
 				<ul class="table-options-menu">
 					<li class="table-menu-item">
 						<i class="fa-solid fa-table icon" style="width: 100%;text-align: center;"> Table</i>
-						<i class="fa-solid fa-left-right button" data-table-mode="expand" @click="AdjustTableMode"></i>
-						<i class="fa-solid fa-trash button" @click="RemoveTable"></i>
+						<i class="fa-solid fa-left-right button" data-button-type="tableMode" data-table-mode="expand" @click="AdjustTableMode"></i>
+						<i class="fa-solid fa-trash button" data-button-type="tableRemove" @click="RemoveTable"></i>
 					</li>
 					<li class="table-menu-item">
 						<i class="icon" style="width: 100%;;text-align: center;">Col <span>at</span> <input style="width: 35px;" type="number" name="" class="table-col-numb" min="1" value="1"></i>
-						<i class="fa-solid fa-plus button" @click="AdjustTableCol(true, $event.target)"></i>
-						<i class="fa-solid fa-minus button" @click="AdjustTableCol(false, $event.target)"></i>
+						<i class="fa-solid fa-plus button" data-button-type="colInc" @click="AdjustTableCol(true, $event.target)"></i>
+						<i class="fa-solid fa-minus button" data-button-type="colDec" @click="AdjustTableCol(false, $event.target)"></i>
 					</li>
 					<li class="table-menu-item">
 						<i class="icon" style="width: 100%;text-align: center;">Row <span>at</span> <input style="width: 35px;" type="number" name="" class="table-row-numb" min="1" value="1"></i>
-						<i class="fa-solid fa-plus button" @click="AdjustTableRow(true, $event.target)"></i>
-						<i class="fa-solid fa-minus button" @click="AdjustTableRow(false, $event.target)"></i>
+						<i class="fa-solid fa-plus button" data-button-type="rowInc" @click="AdjustTableRow(true, $event.target)"></i>
+						<i class="fa-solid fa-minus button" data-button-type="rowDec" @click="AdjustTableRow(false, $event.target)"></i>
 					</li>
 				</ul>
 			</button>
@@ -83,6 +69,7 @@
 	const textarea = ref(null);
 	const emits = defineEmits(['editNote', 'notify']);
 	const historyLimit = 24;
+	const historyIndex = ref(0);
 	const history = ref([]);
 
 	const storage = ref(null);
@@ -115,6 +102,34 @@
 	}
 
 	function editNote() {
+		historyIndex.value += 1;
+		if (history.value.length > historyIndex.value) {
+			history.value.splice(historyIndex.value);
+		}
+		const newHistory = textarea.value.innerHTML;
+		history.value.push(newHistory);
+		if (historyIndex === historyLimit) {
+			history.value.splice(0, 1);
+			historyIndex.value -= 1;
+		}
+		emits('editNote', textarea.value.innerHTML);
+	}
+
+	function undoNote() {
+		if (historyIndex.value === 0) return;
+
+		historyIndex.value = historyIndex.value - 1;
+
+		textarea.value.innerHTML = history.value.at(historyIndex.value);
+		emits('editNote', textarea.value.innerHTML);
+	}
+
+	function redoNote() {
+		if (historyIndex.value + 1 === history.value.length) return;
+
+		historyIndex.value += 1;
+		
+		textarea.value.innerHTML = history.value.at(historyIndex.value);
 		emits('editNote', textarea.value.innerHTML);
 	}
 
@@ -330,16 +345,6 @@
 		else if (cmd === 'createTable') {
 			if (selection.rangeCount > 0) {
 				const range = selection.getRangeAt(0).cloneRange();
-				// if (range.startContainer === range.endContainer) {
-				// 	if (range.startOffset === range.endOffset) {
-				// 		Notify('Cannot attach comment to nothing', 'alert');
-				// 		return;
-				// 	}
-				// }
-				// else {
-				// 	Notify('Cannot attach comment cross paragraphs', 'alert');
-				// 	return;
-				// }
 
 				let node = range.commonAncestorContainer;
 				let parentNode = node.parentElement;
@@ -354,21 +359,59 @@
 				const newLine = document.createElement('div');
 				const newBr = document.createElement('br');
 				newLine.appendChild(newBr);
+
+				const newTable = noteTable.value.cloneNode(true);
+
 				if (node === null) {
 					parentNode.appendChild(newLine.cloneNode(true));
-					parentNode.appendChild(noteTable.value.cloneNode(true));
+					parentNode.appendChild(newTable);
 					parentNode.appendChild(newLine.cloneNode(true));
 				}
 				else {
 					node.insertAdjacentElement('afterend', newLine.cloneNode(true));
-					node.insertAdjacentElement('afterend', noteTable.value.cloneNode(true));
+					node.insertAdjacentElement('afterend', newTable);
 					node.insertAdjacentElement('afterend', newLine.cloneNode(true));
 				}
+
+				newTable.addEventListener('click', (e) => {
+				if (e.target.matches('.button')) {
+					switch (e.target.dataset.buttonType){
+						case 'tableMode':
+							AdjustTableMode(e);
+							break;
+						case 'tableRemove':
+							RemoveTable(e);
+							break;
+						case 'colInc':
+							AdjustTableCol(true, e.target);
+							break;
+						case 'colDec':
+							AdjustTableCol(false, e.target);
+							break;
+						case 'rowInc':
+							AdjustTableRow(true, e.target);
+							break;
+						case 'rowDec':
+							AdjustTableRow(false, e.target);
+							break;
+					}
+				}
+				});
 			}
+		}
+		else if (cmd === 'undo') {
+			undoNote();
+			return;
+		}	
+		else if (cmd === 'redo') {
+			redoNote();
+			return;
 		}
 		else {
 			document.execCommand(cmd, false, value);
 		}
+
+		editNote();
 	}
 
 	function rgbToHex(rgb) {
@@ -436,6 +479,8 @@
 			selection.removeAllRanges();
 			selection.addRange(newRange);
 		}
+
+		editNote();
 	}
 
 	function Notify(msg, type) {
@@ -505,6 +550,8 @@
 			selection.removeAllRanges();
 			selection.addRange(newRange);
 		}
+
+		editNote();
 	}
 
 	function getHTMLSelectedRange() {
@@ -519,6 +566,8 @@
 	document.addEventListener('mouseup', () => {
 		selectedRange.value = getHTMLSelectedRange();
 	});
+
+	
 
 	//Table 
 	function AdjustTableCol(incs, element) {
@@ -544,6 +593,8 @@
 				else row.childNodes[index - 1].remove();
 			}
 		}
+
+		editNote();
 	}	
 
 	function AdjustTableRow(incs, element) {
@@ -574,6 +625,8 @@
 			if (incs) table.insertBefore(newRow, table.childNodes[index - 1]);
 			else table.childNodes[index - 1].remove();
 		}
+
+		editNote();
 	}	
 
 	function AdjustTableMode(e) {
@@ -589,14 +642,17 @@
 			e.target.dataset.tableMode = 'expand';
 			table.style.width = '100%';
 		}
+
+		editNote();
 	}
 
 	function RemoveTable(e) {
 		let table = e.target.parentElement.parentElement.parentElement.parentElement;
 
 		table.remove();
-	}
 
+		editNote();
+	}
 </script>
 
 <style scoped>
