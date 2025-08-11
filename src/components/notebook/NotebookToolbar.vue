@@ -2,7 +2,7 @@
     <div class="toolbar">
         <div>
             <button class="tooltip" @click="exec('folderhier')"><i class="fa-solid fa-folder-tree"></i><span class="tooltiptext">Folder Hierarchy<br>(Ctrl + E)</span></button>
-            <button class="tooltip" @click=""><i class="fa-solid fa-file"></i><span class="tooltiptext">New Note<br>(Ctrl + N)</span></button>
+            <div class="btn-badge"><button class="tooltip" @click="exec('newNote')"><i class="fa-solid fa-file"></i><span class="badge-dot" v-show="!saveStatus"></span><span class="tooltiptext">New Note<br>(Ctrl + N)</span></button></div>
         </div>
         <div>
             <button class="tooltip" @click="exec('undo')"><i class="fa-solid fa-rotate-left"></i><span class="tooltiptext">Undo<br>(Ctrl + Z)</span></button>
@@ -75,6 +75,13 @@
     import { onMounted } from 'vue';
     //var 
     const emits = defineEmits(['execCommand']);
+    const props = defineProps({
+        saveStatus: {
+            Type: Boolean,
+            default: true,
+            required: true,
+        }
+    })
     //func
     onMounted(() => {
         window.addEventListener('keydown', handleKeydown)
@@ -108,6 +115,10 @@
         if (e.ctrlKey && e.key === 'y') {
             e.preventDefault();
             exec('redo');
+        }
+        if (e.ctrlKey && e.key === 'n') {
+            e.preventDefault();
+            exec('newNote');
         }
     }
 
@@ -168,5 +179,18 @@
     background-color: #b2bec3;
 }
 
+.btn-badge {
+    position: relative; /* Để chứa dấu đỏ */
+    display: inline-block;
+}
 
+.badge-dot {
+    position: absolute;
+    top: -5%;
+    right: -5%;
+    width: 30%;
+    height: 30%;
+    background: red;
+    border-radius: 50%;
+}
 </style>

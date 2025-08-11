@@ -1,7 +1,7 @@
 <template>
 	<div class="notebook">
 		<header class="sticky-header note-toolbar">
-			<toolbar @exec-command="execCommand" />
+			<toolbar @exec-command="execCommand" :save-status="saveStatus"/>
 		</header>	
 
 		<div class="layout-container">
@@ -45,6 +45,7 @@
 	const noteContent = ref('');
 	const enableChooseFolderModal = ref(false);
 	const noteEditor = ref(null);
+	const saveStatus = ref(true);
     //Note Organizer
 	const enableFolderHier = ref(false);
 	const folders = ref([
@@ -120,6 +121,7 @@
 	}
 
 	function UpdateNote(newNote) {
+		if (saveStatus.value) saveStatus.value = false;
 		noteContent.value = newNote;
 	}
 
@@ -145,8 +147,21 @@
 	}
 
 	function SaveFile() {
-		const file = filesContent.value.find(f => f.id === noteID.value);
-		file.content = noteContent.value;
+		if (noteID.value === null) {
+			
+		}
+		else {
+			const file = filesContent.value.find(f => f.id === noteID.value);
+			file.content = noteContent.value;
+		}
+	}
+
+	function CheckSaveStatus() {
+		if (!saveStatus.value) {
+			Notify('Note is not saved yet!', 'alert');
+		}
+		
+		return saveStatus.value;
 	}
 
 	function RemoveFile(fileID, id) {
@@ -158,10 +173,18 @@
 	}
 
 	function OpenFile(fileID) {
-		//request infor from server
-		noteID.value = fileID;
-		noteContent.value = filesContent.value.find(f => f.id === fileID).content;
-		noteEditor.value?.openFile(noteContent.value);
+		if (!CheckSaveStatus()) return;
+
+		if (fileID === null) {	
+			noteID.value = null;
+			noteContent.value = '';
+			noteEditor.value?.openFile(null);
+		}
+		else {
+			noteID.value = fileID;
+			noteContent.value = filesContent.value.find(f => f.id === fileID).content;
+			noteEditor.value?.openFile(noteContent.value);
+		}
 	}
 
 	function ActiveModal() {
@@ -207,6 +230,9 @@
 				return;
 			case 'folderhier':
 				ActiveFolderHierarchy();
+				return;
+			case 'newNote':
+
 				return;
 			default:
 				break;

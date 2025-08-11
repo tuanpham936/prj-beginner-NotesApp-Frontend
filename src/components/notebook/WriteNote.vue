@@ -92,13 +92,28 @@
 	//Table
 	const noteTable = ref(null);
 
+	//run at start
+	document.addEventListener('DOMContentLoaded', function() {
+		textarea.value.focus();
+        editNote();
+    });
+
 	//func
 	function tabIndent() {
 		document.execCommand('insertText', false, '\t')
 	}
 
 	function openFile(content) {
-		textarea.value.innerHTML = content;
+		if (content === null) {
+			textarea.value.innerHTML = '';
+		}
+		else {
+			textarea.value.innerHTML = content;
+			textarea.value.querySelectorAll('.note-table').forEach(table => {
+				AddTableButton(table);
+			});
+		}
+		editNote();
 	}
 
 	function editNote() {
@@ -106,7 +121,17 @@
 		if (history.value.length > historyIndex.value) {
 			history.value.splice(historyIndex.value);
 		}
-		const newHistory = textarea.value.innerHTML;
+		const newRange = {
+			startPath: getNodePath(document.getSelection().getRangeAt(0).startContainer, textarea.value),
+			endPath: getNodePath(document.getSelection().getRangeAt(0).endContainer, textarea.value),
+			startOffset: document.getSelection().getRangeAt(0).startOffset,
+			endOffset: document.getSelection().getRangeAt(0).endOffset,
+		};
+		const newContent = textarea.value.innerHTML;
+		const newHistory = {
+			range: newRange,
+			content: newContent,
+		};
 		history.value.push(newHistory);
 		if (historyIndex === historyLimit) {
 			history.value.splice(0, 1);
@@ -119,8 +144,24 @@
 		if (historyIndex.value === 0) return;
 
 		historyIndex.value = historyIndex.value - 1;
+		
+		const currentHistory = history.value.at(historyIndex.value);
+		textarea.value.innerHTML = currentHistory.content;
+		const selection = document.getSelection();
+		selection.removeAllRanges();
 
-		textarea.value.innerHTML = history.value.at(historyIndex.value);
+		const newStartNode = getNodeByPath(textarea.value, currentHistory.range.startPath);
+		const newEndNode = getNodeByPath(textarea.value, currentHistory.range.endPath);
+
+		const newRange = document.createRange();
+		newRange.setStart(newStartNode, currentHistory.range.startOffset);
+		newRange.setEnd(newEndNode, currentHistory.range.endOffset);
+
+		selection.addRange(newRange);
+
+		textarea.value.querySelectorAll('.note-table').forEach(table => {
+			AddTableButton(table);
+		});
 		emits('editNote', textarea.value.innerHTML);
 	}
 
@@ -129,8 +170,48 @@
 
 		historyIndex.value += 1;
 		
-		textarea.value.innerHTML = history.value.at(historyIndex.value);
+		const currentHistory = history.value.at(historyIndex.value);
+		textarea.value.innerHTML = currentHistory.content;
+		const selection = document.getSelection();
+		selection.removeAllRanges();
+
+		const newStartNode = getNodeByPath(textarea.value, currentHistory.range.startPath);
+		const newEndNode = getNodeByPath(textarea.value, currentHistory.range.endPath);
+
+		const newRange = document.createRange();
+		newRange.setStart(newStartNode, currentHistory.range.startOffset);
+		newRange.setEnd(newEndNode, currentHistory.range.endOffset);
+
+		selection.addRange(newRange);
+
+		textarea.value.querySelectorAll('.note-table').forEach(table => {
+			AddTableButton(table);
+		});
 		emits('editNote', textarea.value.innerHTML);
+	}
+
+	function getNodePath(node, root) {
+		const path = [];
+		let current = node;
+
+		while (current && current !== root) {
+			const parent = current.parentNode;
+			if (!parent) break;
+			const index = Array.prototype.indexOf.call(parent.childNodes, current);
+			path.unshift(index);
+			current = parent;
+		}
+
+		return path;
+	}
+
+	function getNodeByPath(root, path) {
+		let current = root;
+		for (let i = 0; i < path.length; i++) {
+			if (!current || !current.childNodes[i]) return null;
+			current = current.childNodes[i];
+		}
+		return current;
 	}
 
 	function executeCommand(cmd, value) {
@@ -368,35 +449,19 @@
 					parentNode.appendChild(newLine.cloneNode(true));
 				}
 				else {
-					node.insertAdjacentElement('afterend', newLine.cloneNode(true));
-					node.insertAdjacentElement('afterend', newTable);
-					node.insertAdjacentElement('afterend', newLine.cloneNode(true));
-				}
-
-				newTable.addEventListener('click', (e) => {
-				if (e.target.matches('.button')) {
-					switch (e.target.dataset.buttonType){
-						case 'tableMode':
-							AdjustTableMode(e);
-							break;
-						case 'tableRemove':
-							RemoveTable(e);
-							break;
-						case 'colInc':
-							AdjustTableCol(true, e.target);
-							break;
-						case 'colDec':
-							AdjustTableCol(false, e.target);
-							break;
-						case 'rowInc':
-							AdjustTableRow(true, e.target);
-							break;
-						case 'rowDec':
-							AdjustTableRow(false, e.target);
-							break;
+					if (node.nodeType === Node.TEXT_NODE) {
+						range.insertNode(newLine.cloneNode(true));
+						range.insertNode(newTable);
+						range.insertNode(newLine.cloneNode(true));
+					}
+					else {
+						node.insertAdjacentElement('afterend', newLine.cloneNode(true));
+						node.insertAdjacentElement('afterend', newTable);
+						node.insertAdjacentElement('afterend', newLine.cloneNode(true));
 					}
 				}
-				});
+
+				AddTableButton(newTable);
 			}
 		}
 		else if (cmd === 'undo') {
@@ -567,9 +632,34 @@
 		selectedRange.value = getHTMLSelectedRange();
 	});
 
-	
-
 	//Table 
+	function AddTableButton(table) {
+		table.addEventListener('click', (e) => {
+			if (e.target.matches('.button')) {
+				switch (e.target.dataset.buttonType){
+					case 'tableMode':
+						AdjustTableMode(e);
+						break;
+					case 'tableRemove':
+						RemoveTable(e);
+						break;
+					case 'colInc':
+						AdjustTableCol(true, e.target);
+						break;
+					case 'colDec':
+						AdjustTableCol(false, e.target);
+						break;
+					case 'rowInc':
+						AdjustTableRow(true, e.target);
+						break;
+					case 'rowDec':
+						AdjustTableRow(false, e.target);
+						break;
+				}
+			}
+		});
+	}
+
 	function AdjustTableCol(incs, element) {
 		let menuItemParent = element.parentElement;
 		const index = menuItemParent.firstChild.lastChild.value;
@@ -637,10 +727,14 @@
 		if (tableMode === 'expand') {
 			e.target.dataset.tableMode = 'fit';
 			table.style.width = 'fit-content';
+			e.target.classList.remove('fa-left-right');
+			e.target.classList.add('fa-minimize');
 		}
 		else {
 			e.target.dataset.tableMode = 'expand';
 			table.style.width = '100%';
+			e.target.classList.remove('fa-minimize');
+			e.target.classList.add('fa-left-right');
 		}
 
 		editNote();
