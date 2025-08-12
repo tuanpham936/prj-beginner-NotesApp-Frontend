@@ -23,7 +23,7 @@
 			</aside>
 		</div>
 
-		<chooseFolderModal v-show="enableChooseFolderModal" :folders="folders" @closeModal="UnactiveModal" @chooseFolder="ChooseChangeFolder"/>
+		<chooseFolderModal v-show="enableChooseFolderModal" :folders="folders" @closeModal="UnactiveModal" @chooseFolder="ChooseFolder"/>
 		
 	</div>
 	<message v-show="enableMessage" :msg="messageText" :type="messageType" @msg-confirm="UnactiveMessage"/>
@@ -116,10 +116,6 @@
 		},
 	]);
 
-	function NewNote() {
-
-	}
-
 	function UpdateNote(newNote) {
 		if (saveStatus.value) saveStatus.value = false;
 		noteContent.value = newNote;
@@ -147,13 +143,16 @@
 	}
 
 	function SaveFile() {
-		if (noteID.value === null) {
-			
+		if (saveStatus.value) return;
+
+		if (noteID.value.trim() === '') {
+			ActiveModal();
 		}
 		else {
 			const file = filesContent.value.find(f => f.id === noteID.value);
 			file.content = noteContent.value;
 		}
+		saveStatus.value = true;
 	}
 
 	function CheckSaveStatus() {
@@ -185,6 +184,8 @@
 			noteContent.value = filesContent.value.find(f => f.id === fileID).content;
 			noteEditor.value?.openFile(noteContent.value);
 		}
+
+		saveStatus.value = true;
 	}
 
 	function ActiveModal() {
@@ -195,16 +196,34 @@
 		enableChooseFolderModal.value = false;
 	}
 
-	function ChooseChangeFolder(id) {
-		if (id !== folderId.value) {
-			RemoveFile(fileChange.id, folderId.value);
-			const folder = folders.value.find(f => f.id === id);
-			const newFile = reactive({
-				id: fileChange.id,
-				name: fileChange.name,
-			});
+	function ChooseFolder(newFolderId) {
+		if (noteID.value.trim() === '') {
+			const folder = folders.value.find(f => f.id === newFolderId);
+			const newFile = {
+				id: 'F-123',
+				name: 'New Note',
+			};
 			folder.files.push(newFile);
 			folder.files = sortByNameAsc(folder.files);
+
+			const newFileContent = {
+				id: 'F-123',
+				name: 'New Note',
+				content: noteContent.value,
+			};
+			filesContent.value.push(newFileContent);
+		}
+		else {
+			if (newFolderId !== folderId.value) {
+				RemoveFile(fileChange.id, folderId.value);
+				const folder = folders.value.find(f => f.id === newFolderId);
+				const newFile = reactive({
+					id: fileChange.id,
+					name: fileChange.name,
+				});
+				folder.files.push(newFile);
+				folder.files = sortByNameAsc(folder.files);
+			}
 		}
 		UnactiveModal();
 	}
@@ -232,7 +251,7 @@
 				ActiveFolderHierarchy();
 				return;
 			case 'newNote':
-
+				OpenFile(null);
 				return;
 			default:
 				break;

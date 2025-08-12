@@ -2,12 +2,12 @@
     <div class="toolbar">
         <div>
             <button class="tooltip" @click="exec('folderhier')"><i class="fa-solid fa-folder-tree"></i><span class="tooltiptext">Folder Hierarchy<br>(Ctrl + E)</span></button>
-            <div class="btn-badge"><button class="tooltip" @click="exec('newNote')"><i class="fa-solid fa-file"></i><span class="badge-dot" v-show="!saveStatus"></span><span class="tooltiptext">New Note<br>(Ctrl + N)</span></button></div>
+            <div><button class="tooltip" @click="exec('newNote')"><i class="fa-solid fa-file"></i><span class="tooltiptext">New Note<br>(Ctrl + N)</span></button></div>
         </div>
         <div>
             <button class="tooltip" @click="exec('undo')"><i class="fa-solid fa-rotate-left"></i><span class="tooltiptext">Undo<br>(Ctrl + Z)</span></button>
             <button class="tooltip" @click="exec('redo')"><i class="fa-solid fa-rotate-right"></i><span class="tooltiptext">Redo<br>(Ctrl + Y)</span></button>
-            <button class="tooltip" @click="exec('save')"><i class="fa-solid fa-floppy-disk"></i><span class="tooltiptext">Save<br>(Ctrl + S)</span></button>
+            <div class="btn-badge"><button class="tooltip" @click="exec('save')"><i class="fa-solid fa-floppy-disk"></i><span class="badge-dot" v-show="!saveStatus"></span><span class="tooltiptext">Save<br>(Ctrl + S)</span></button></div>
         </div>
         <div>
             <button class="tooltip" @click="exec('cut')"><i class="fa-solid fa-scissors"></i><span class="tooltiptext">Cut<br>(Ctrl + X)</span></button>
