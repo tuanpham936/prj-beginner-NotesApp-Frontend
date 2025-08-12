@@ -42,6 +42,7 @@
 	//data
     //Note data
   	const noteID = ref('');
+	const noteName = ref('');
 	const noteContent = ref('');
 	const enableChooseFolderModal = ref(false);
 	const noteEditor = ref(null);
@@ -205,13 +206,15 @@
 			};
 			folder.files.push(newFile);
 			folder.files = sortByNameAsc(folder.files);
-
+			
 			const newFileContent = {
 				id: 'F-123',
 				name: 'New Note',
 				content: noteContent.value,
 			};
 			filesContent.value.push(newFileContent);
+
+			noteID.value = 'F-123';
 		}
 		else {
 			if (newFolderId !== folderId.value) {

@@ -95,7 +95,7 @@
 	//run at start
 	document.addEventListener('DOMContentLoaded', function() {
 		textarea.value.focus();
-        editNote();
+        startHistory();
     });
 
 	//func
@@ -113,7 +113,25 @@
 				AddTableButton(table);
 			});
 		}
-		editNote();
+
+		startHistory();
+	}
+
+	function startHistory() {
+		history.value.splice(0, history.value.length);
+		historyIndex.value = 0;
+		const newRange = {
+			startPath: getNodePath(textarea.value, textarea.value),
+			endPath: getNodePath(textarea.value, textarea.value),
+			startOffset: 0,
+			endOffset: 0,
+		};
+		const newContent = textarea.value.innerHTML;
+		const newHistory = {
+			range: newRange,
+			content: newContent,
+		};
+		history.value.push(newHistory);
 	}
 
 	function editNote() {
@@ -141,36 +159,31 @@
 	}
 
 	function undoNote() {
-		if (historyIndex.value === 0) return;
+		if (historyIndex.value === 0) {
+			loadHistory(historyIndex.value);
+			return;
+		}
 
 		historyIndex.value = historyIndex.value - 1;
 		
-		const currentHistory = history.value.at(historyIndex.value);
-		textarea.value.innerHTML = currentHistory.content;
-		const selection = document.getSelection();
-		selection.removeAllRanges();
+		loadHistory(historyIndex.value);
 
-		const newStartNode = getNodeByPath(textarea.value, currentHistory.range.startPath);
-		const newEndNode = getNodeByPath(textarea.value, currentHistory.range.endPath);
-
-		const newRange = document.createRange();
-		newRange.setStart(newStartNode, currentHistory.range.startOffset);
-		newRange.setEnd(newEndNode, currentHistory.range.endOffset);
-
-		selection.addRange(newRange);
-
-		textarea.value.querySelectorAll('.note-table').forEach(table => {
-			AddTableButton(table);
-		});
 		emits('editNote', textarea.value.innerHTML);
 	}
 
 	function redoNote() {
-		if (historyIndex.value + 1 === history.value.length) return;
+		if ((historyIndex.value + 1) >= history.value.length) {
+			loadHistory(historyIndex.value);
+			return;
+		}
 
 		historyIndex.value += 1;
 		
-		const currentHistory = history.value.at(historyIndex.value);
+		loadHistory(historyIndex.value);
+	}
+
+	function loadHistory(index) {
+		const currentHistory = history.value.at(index);
 		textarea.value.innerHTML = currentHistory.content;
 		const selection = document.getSelection();
 		selection.removeAllRanges();
@@ -181,13 +194,13 @@
 		const newRange = document.createRange();
 		newRange.setStart(newStartNode, currentHistory.range.startOffset);
 		newRange.setEnd(newEndNode, currentHistory.range.endOffset);
-
+		
+		textarea.value.focus();
 		selection.addRange(newRange);
 
 		textarea.value.querySelectorAll('.note-table').forEach(table => {
 			AddTableButton(table);
 		});
-		emits('editNote', textarea.value.innerHTML);
 	}
 
 	function getNodePath(node, root) {
