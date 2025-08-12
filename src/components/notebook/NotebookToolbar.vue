@@ -30,9 +30,9 @@
                 <option value="1">Super Small</option>
                 <option value="2">Small</option>
                 <option value="3">Medium</option>
-                <option value="5">Large</option>
-                <option value="6">Super Large</option>
-                <option value="7">Super Super Large</option>
+                <option value="4">Large</option>
+                <option value="5">Super Large</option>
+                <option value="6">Super Super Large</option>
             </select>
         </div>
         <div>

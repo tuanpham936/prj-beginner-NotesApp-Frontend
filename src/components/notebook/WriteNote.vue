@@ -230,7 +230,7 @@
 
 	function executeCommand(cmd, value) {
 		textarea.value?.focus();
-		const selection = window.getSelection();
+		let selection = window.getSelection();
 		selection.removeAllRanges();
 		selection.addRange(selectedRange.value);
 
@@ -488,7 +488,7 @@
 		}
 		else if (cmd === 'fontSize') {
 			if (selection.rangeCount > 0) {
-				const range = selection.getRangeAt(0);
+				let range = selection.getRangeAt(0);
 				if (range.startContainer === range.endContainer) {
 					if (range.startOffset === range.endOffset) {
 						return;
@@ -499,16 +499,80 @@
 				let nodes = Array.from(parentNode.childNodes);
 				nodes = nodes.filter(node => range.intersectsNode(node));
 
-				console.log(nodes);
+				let lineheight = 24;
+				let fontsize = 16;
 
-				nodes.forEach(node => {
-					if (node.nodeType === Node.TEXT_NODE) {
+				switch (value) {
+					case '1':
+						lineheight = 24;
+						fontsize = 6;
+						break;
+					case '2':
+						lineheight = 24;
+						fontsize = 12;
+						break;
+					case '3':
+						lineheight = 24;
+						fontsize = 16;
+						break;
+					case '4':
+						lineheight = 24;
+						fontsize = 20;
+						break;
+					case '5':
+						lineheight = 24;
+						fontsize = 24;
+						break;
+					case '6':
+						lineheight = 48;
+						fontsize = 40;
+						break;
+				}
 
-					}
-					else {
-						node.style.fontSize = '50px';
-					}
-				});
+				wrapSelectionSafe('span', { lineHeight: lineheight + 'px', fontSize: fontsize + 'px'});
+
+				// nodes.forEach(node => {
+				// 	if (node.nodeType === Node.TEXT_NODE) {
+				// 		if (node === nodes.firstChild) {
+				// 			if (nodes.firstChild === nodes.lastChild) {
+
+				// 			}
+				// 			else {
+				// 				const text = node.textContent;
+				// 				const before = text.slice(0, range.startOffset);
+				// 				const insert = text.slice(range.startOffset);
+
+				// 				const beforeNode = document.createTextNode(before);
+				// 				const insertNode = document.createElement('span');
+				// 				insertNode.textContent = insert;
+
+				// 				insertNode.style.lineHeight = lineHeight + 'px';
+				// 				insertNode.style.fontSize = fontSize + 'px';
+
+				// 				const parentNode = node.parentElement;
+								
+				// 				parentNode.insertBefore(beforeNode, node);
+				// 				parentNode.insertBefore(insertNode, node);
+
+				// 				node.remove();
+				// 			}
+				// 		}
+				// 		else if (node === nodes.lastChild) {
+
+				// 		}
+				// 		else {
+				// 			const newNode = document.createElement('span');
+				// 			newNode.textContent = node.textContent;
+				// 			newNode.style.lineHeight = lineHeight + 'px';
+				// 			newNode.style.fontSize = fontSize + 'px';
+				// 			node.replaceWith(newNode);
+				// 		}
+				// 	}
+				// 	else {
+				// 		node.style.lineHeight = lineHeight + 'px';
+				// 		node.style.fontSize = fontSize + 'px';
+				// 	}
+				// });
 			}
 		}
 		else {
@@ -785,6 +849,56 @@
 		table.remove();
 
 		editNote();
+	}
+
+	function wrapSelectionSafe(tagName = 'span', style = {}) {
+		const sel = window.getSelection();
+		if (!sel.rangeCount || sel.isCollapsed) return null;
+
+		const range = sel.getRangeAt(0);
+
+		// Hàm cắt node text tại offset selection
+		function splitTextNode(node, offset) {
+			if (node.nodeType === Node.TEXT_NODE) {
+				return node.splitText(offset);
+			}
+			return null;
+		}
+
+		// Cắt ở đầu selection
+		if (range.startContainer.nodeType === Node.TEXT_NODE) {
+			if (range.startOffset > 0) {
+				const afterStart = splitTextNode(range.startContainer, range.startOffset);
+				range.setStart(afterStart, 0);
+			}
+		}
+
+		// Cắt ở cuối selection
+		if (range.endContainer.nodeType === Node.TEXT_NODE) {
+			if (range.endOffset < range.endContainer.length) {
+				splitTextNode(range.endContainer, range.endOffset);
+			}
+		}
+
+		// Lấy nội dung được chọn
+		const contents = range.extractContents();
+		console.log(contents.toString());
+
+		// Tạo wrapper
+		const wrapper = document.createElement(tagName);
+		Object.assign(wrapper.style, style);
+		wrapper.appendChild(contents);
+
+		// Chèn wrapper vào DOM
+		range.insertNode(wrapper);
+
+		// Reset selection về phần mới bọc
+		sel.removeAllRanges();
+		const newRange = document.createRange();
+		newRange.selectNodeContents(wrapper);
+		sel.addRange(newRange);
+
+		return wrapper; // Trả ra wrapper để dùng tiếp
 	}
 </script>
 
