@@ -15,7 +15,7 @@
             <!-- <button class="tooltip" @click="exec('paste')"><i class="fa-solid fa-paste"></i><span class="tooltiptext">Paste<br>(Ctrl + V)</span></button> -->
         </div>
         <div>
-            <select id="fontSelector" onchange="changeFont(this.value)">
+            <select id="fontSelector" @change="exec(this.value)">
                 <option disabled selected>Font Family</option>
                 <option value="Arial">Arial</option>
                 <option value="Times New Roman">Times New Roman</option>
@@ -25,14 +25,14 @@
             </select>
         </div>
         <div>
-            <select id="fontSizeSelector" onchange="changeFontSize(this.value)">
+            <select id="fontSizeSelector" @change="exec('fontSize', $event.target.value)">
                 <option disabled selected>Font Size</option>
-                <option value="1">Rất nhỏ</option>
-                <option value="2">Nhỏ</option>
-                <option value="3">Trung bình</option>
-                <option value="5">Lớn</option>
-                <option value="6">Rất lớn</option>
-                <option value="7">Cực lớn</option>
+                <option value="1">Super Small</option>
+                <option value="2">Small</option>
+                <option value="3">Medium</option>
+                <option value="5">Large</option>
+                <option value="6">Super Large</option>
+                <option value="7">Super Super Large</option>
             </select>
         </div>
         <div>
@@ -122,8 +122,8 @@
         }
     }
 
-    function exec(cmd) {
-        emits('execCommand', cmd);
+    function exec(cmd, value) {
+        emits('execCommand', cmd, value);
     }
 
     const textColorInput = ref(null);

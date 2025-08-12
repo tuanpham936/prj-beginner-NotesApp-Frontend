@@ -4,6 +4,7 @@
 		<br>
 		<hr> -->
         <div ref="textarea" contenteditable="true" id="note-editor" class="lined-textarea" placeholder="Nội dung..." v-on:keydown.tab.prevent="tabIndent" @click="" @input="editNote" @mousedown="">
+
 		</div>
 	</div>
 
@@ -484,6 +485,31 @@
 		else if (cmd === 'redo') {
 			redoNote();
 			return;
+		}
+		else if (cmd === 'fontSize') {
+			if (selection.rangeCount > 0) {
+				const range = selection.getRangeAt(0);
+				if (range.startContainer === range.endContainer) {
+					if (range.startOffset === range.endOffset) {
+						return;
+					}
+				}
+
+				let parentNode = range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
+				let nodes = Array.from(parentNode.childNodes);
+				nodes = nodes.filter(node => range.intersectsNode(node));
+
+				console.log(nodes);
+
+				nodes.forEach(node => {
+					if (node.nodeType === Node.TEXT_NODE) {
+
+					}
+					else {
+						node.style.fontSize = '50px';
+					}
+				});
+			}
 		}
 		else {
 			document.execCommand(cmd, false, value);

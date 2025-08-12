@@ -152,8 +152,8 @@
 		else {
 			const file = filesContent.value.find(f => f.id === noteID.value);
 			file.content = noteContent.value;
+			saveStatus.value = true;
 		}
-		saveStatus.value = true;
 	}
 
 	function CheckSaveStatus() {
@@ -198,6 +198,7 @@
 	}
 
 	function ChooseFolder(newFolderId) {
+		if (newFolderId === null) return;
 		if (noteID.value.trim() === '') {
 			const folder = folders.value.find(f => f.id === newFolderId);
 			const newFile = {
@@ -215,6 +216,7 @@
 			filesContent.value.push(newFileContent);
 
 			noteID.value = 'F-123';
+			saveStatus.value = true;
 		}
 		else {
 			if (newFolderId !== folderId.value) {
