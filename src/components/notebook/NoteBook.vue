@@ -26,7 +26,7 @@
 		<chooseFolderModal v-show="enableChooseFolderModal" :folders="folders" @closeModal="UnactiveModal" @chooseFolder="ChooseFolder"/>
 		
 	</div>
-	<message v-show="enableMessage" :msg="messageText" :type="messageType" @msg-confirm="UnactiveMessage"/>
+	<message ref="msgBox" v-show="enableMessage" @msg-confirm="UnactiveMessage"/>
 </template>
 
 <script setup>
@@ -47,7 +47,7 @@
 	const enableChooseFolderModal = ref(false);
 	const noteEditor = ref(null);
 	const saveStatus = ref(true);
-    //Note Organizer
+    //Note Organizer Data
 	const enableFolderHier = ref(false);
 	const folders = ref([
 		{
@@ -88,8 +88,7 @@
 	const folderId = ref('');
 	//Message
 	const enableMessage = ref(false);
-	const messageText = ref('');
-	const messageType = ref('');
+	const msgBox = ref(null);
 
 	//Sidebar
 	const sidebar = ref(null);
@@ -267,8 +266,7 @@
 
 	//Message Method
 	function Notify(msg, type) {
-		messageText.value = msg;
-		messageType.value = type;
+		msgBox.value?.setMessage(msg, type);
 		ActiveMessage();
 	}
 
@@ -278,8 +276,6 @@
 	
 	function UnactiveMessage() {
 		enableMessage.value = false;
-		messageText.value = '';
-		messageType.value = '';
 	}
 
 	//Folder Hierarchy

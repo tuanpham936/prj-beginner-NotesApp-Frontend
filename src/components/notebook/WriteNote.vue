@@ -341,12 +341,12 @@
 				const range = selection.getRangeAt(0).cloneRange();
 				if (range.startContainer === range.endContainer) {
 					if (range.startOffset === range.endOffset) {
-						Notify('Cannot attach link to nothing', 'alert');
+						Notify('Cannot attach link to nothing', 'warning');
 						return;
 					}
 				}
 				else {
-					Notify('Cannot attach link cross paragraphs', 'alert');
+					Notify('Cannot attach link cross paragraphs', 'warning');
 					return;
 				}
 				let node = range.startContainer;
@@ -392,12 +392,12 @@
 				const range = selection.getRangeAt(0).cloneRange();
 				if (range.startContainer === range.endContainer) {
 					if (range.startOffset === range.endOffset) {
-						Notify('Cannot attach comment to nothing', 'alert');
+						Notify('Cannot attach comment to nothing', 'warning');
 						return;
 					}
 				}
 				else {
-					Notify('Cannot attach comment cross paragraphs', 'alert');
+					Notify('Cannot attach comment cross paragraphs', 'warning');
 					return;
 				}
 				let node = range.startContainer;
