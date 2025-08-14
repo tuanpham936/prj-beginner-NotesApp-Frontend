@@ -96,8 +96,8 @@
         emits('removeFile', fileID, props.id);
     }
 
-    function OpenFile(fileID) {
-        emits('openFile', fileID);
+    function OpenFile(fileID, noteTitle) {
+        emits('openFile', fileID, noteTitle);
     }
 
     //Animation

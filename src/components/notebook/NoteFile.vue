@@ -52,7 +52,7 @@
     }
 
     function OpenFile() {
-        emits('openFile', props.id);
+        emits('openFile', props.id, props.fileName);
     }
 </script>
 

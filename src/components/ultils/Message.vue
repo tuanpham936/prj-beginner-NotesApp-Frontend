@@ -32,13 +32,13 @@
 
     function setType() {
         msgBox.value.classList.remove('message');
-        msgBox.value.classList.remove('alert');
+        msgBox.value.classList.remove('error');
         msgBox.value.classList.remove('warning');
         msgBtn.value.classList.remove('message');
-        msgBtn.value.classList.remove('alert');
+        msgBtn.value.classList.remove('error');
         msgBtn.value.classList.remove('warning');
         icon.value.classList.remove('message');
-        icon.value.classList.remove('alert');
+        icon.value.classList.remove('error');
         icon.value.classList.remove('warning');
         icon.value.classList.remove('fa-envelope');
         icon.value.classList.remove('fa-circle-exclamation');
@@ -56,10 +56,10 @@
                 icon.value.classList.add('warning');
                 icon.value.classList.add('fa-triangle-exclamation');
                 break;
-            case 'alert':
-                msgBox.value.classList.add('alert');
-                msgBtn.value.classList.add('alert');
-                icon.value.classList.add('alert');
+            case 'error':
+                msgBox.value.classList.add('error');
+                msgBtn.value.classList.add('error');
+                icon.value.classList.add('error');
                 icon.value.classList.add('fa-circle-exclamation');
                 break;
         }
@@ -132,14 +132,14 @@
     background-color: #1f6391;
 }
 
-.static-message-box.alert {
+.static-message-box.error {
     border-top: 4px solid #db3434; /* message = xanh dương */
 }
 
-.confirm-button.alert {
+.confirm-button.error {
     background-color: #db3434;
 }
-.confirm-button.alert:hover {
+.confirm-button.error:hover {
     background-color: #c12e2e;
 }
 
@@ -158,7 +158,7 @@
     color: #3498db;
 }
 
-.notif-icon.alert {
+.notif-icon.error {
     color: #db3434;
 }
 

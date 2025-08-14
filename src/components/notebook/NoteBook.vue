@@ -7,7 +7,7 @@
 		<div class="layout-container">
 			<main class="main-content">
 				<div class="note-editor-wrapper">
-					<writenote style="z-index: 5;" ref="noteEditor" @edit-note="UpdateNote" @notify="Notify"/>
+					<writenote style="z-index: 5;" ref="noteEditor" @edit-note="UpdateNote" @notify="Notify" @edit-title="UpdateTitle"/>
 				</div>
 			</main>
 		</div>
@@ -36,13 +36,14 @@
 	import chooseFolderModal from './ChooseFolderModal.vue';
 	import toolbar from './NotebookToolbar.vue';
 	import message from '../ultils/Message.vue';
-	import { ref, watch } from 'vue'; //Declare primitive variables
+	import { onMounted, ref, watch } from 'vue'; //Declare primitive variables
 	import { reactive } from 'vue'; //Declare object, array variables
+	import { getFolders, postFolder, updateFolder, deleteFolder, getFilesByFolderId, postFile, updateFile, deleteFile, postNote, getNote, updateNote, deleteNote } from '../ultils/axios.vue'
 
 	//data
     //Note data
   	const noteID = ref('');
-	const noteName = ref('');
+	const noteTitle = ref('');
 	const noteContent = ref('');
 	const enableChooseFolderModal = ref(false);
 	const noteEditor = ref(null);
@@ -93,28 +94,41 @@
 	//Sidebar
 	const sidebar = ref(null);
 
-	const filesContent = ref([
-		{
-		name: 'File 1',
-		id: 'ABC-123',
-		content: 'This is content<div>of</div><div>File 1</div>',
-		},
-		{
-		name: 'File 2',
-		id: 'DEF-456',
-		content: 'This is content of File 2',
-		},
-		{
-		name: 'File 3',
-		id: 'ABCD-1234',
-		content: 'This is content of File 3',
-		},
-		{
-		name: 'File 4',
-		id: 'DEFG-4567',
-		content: 'This is content of File 4',
-		},
-	]);
+	//Start
+	onMounted(() => {
+		folders.value.splice(0);
+		folders.value = getFolders(); 
+		if (!folders.value) {
+			Notify('Error: Cannot get folders', 'error');
+			folders.value = [];
+			return;
+		}
+		folders.value.forEach(folder => {
+			folder.files = getFilesByFolderId(folder.id);
+			if (!folder.files) {
+				Notify('Error: Cannot get note in folders', 'alert');
+				folder.files = [];
+				return;
+			}
+		})
+	});
+
+	function UpdateTitle(newTitle) {
+		noteTitle.value = newTitle;
+
+		if (noteID.value === '') return;
+		
+		const folder = folders.value.find(fd => fd.files.find(fl => fl.id === noteID.value));
+
+		const flag = updateFile(noteID.value, newTitle, folder.id);
+		if (!flag) {
+			Notify('Error: Cannot update note title', 'error');
+			return;
+		}
+
+		const file = folder.files.find(fl => fl.id === noteID.value);
+		file.name = newTitle;
+	}
 
 	function UpdateNote(newNote) {
 		if (saveStatus.value) saveStatus.value = false;
@@ -122,12 +136,26 @@
 	}
 
 	function UpdateFolderName(id, newName) {
+		const flag = updateFolder(id, newName);
+		if (!flag) {
+			Notify('Error: Cannot update folder name', 'error');
+			return;
+		}
 		const folder = folders.value.find(f => f.id === id);
 		folder.name = newName;
 		folders.value = sortByNameAsc(folders.value);
 	}
 
 	function RemoveFolder(id) {
+		const folder = folders.value.find(f => f.id === id);
+		folder.files.forEach(file => {
+			RemoveFile(file.id);
+		});
+		const flag = deleteFolder(id);
+		if (!flag) {
+			Notify('Error: Cannot remove folder', 'error');
+			return;
+		}
 		const index = folders.value.findIndex(f => f.id === id);
 		folders.value.splice(index, 1);
 		folders.value = sortByNameAsc(folders.value);
@@ -149,15 +177,18 @@
 			ActiveModal();
 		}
 		else {
-			const file = filesContent.value.find(f => f.id === noteID.value);
-			file.content = noteContent.value;
+			const flag = updateNote(noteID.value, noteContent.value);
+			if (!flag) {
+				Notify('Error: Cannot save note', 'error');
+				return;
+			}
 			saveStatus.value = true;
 		}
 	}
 
 	function CheckSaveStatus() {
 		if (!saveStatus.value) {
-			Notify('Note is not saved yet!', 'alert');
+			Notify('Note is not saved yet!', 'error');
 		}
 		
 		return saveStatus.value;
@@ -165,24 +196,42 @@
 
 	function RemoveFile(fileID, id) {
 		const folder = folders.value.find(f => f.id === id);
+		const file = folder.files.find(f => f.id === fileID);
+		const flag2 = deleteNote(fileID);
+		if (!flag2) {
+			Notify('Error: Cannot remove note', 'error');
+			return;
+		}
+		const flag1 = deleteFile(fileID, id);
+		if (!flag1) {
+			Notify('Error: Cannot remove note', 'error');
+			return;
+		}
 		const index = folder.files.findIndex(f => f.id == fileID);
 		if (folder.files[index].id === noteID.value) noteID.value = '';
 		folder.files.splice(index, 1);
 		folder.files = sortByNameAsc(folder.files);
 	}
 
-	function OpenFile(fileID) {
+	function OpenFile(fileID, fileTitle) {
 		if (!CheckSaveStatus()) return;
 
 		if (fileID === null) {	
-			noteID.value = null;
+			noteID.value = '';
+			noteTitle.value = '';
 			noteContent.value = '';
-			noteEditor.value?.openFile(null);
+			noteEditor.value?.openFile(null, null);
 		}
 		else {
+			const openNoteContent = getNote(fileID);
+			if (!openNoteContent) {
+				Notify('Error: Cannot open note', 'error');
+				return;
+			}
 			noteID.value = fileID;
-			noteContent.value = filesContent.value.find(f => f.id === fileID).content;
-			noteEditor.value?.openFile(noteContent.value);
+			noteTitle.value = fileTitle;
+			noteContent.value = openNoteContent;
+			noteEditor.value?.openFile(noteTitle.value, noteContent.value);
 		}
 
 		saveStatus.value = true;
@@ -199,26 +248,34 @@
 	function ChooseFolder(newFolderId) {
 		if (newFolderId === null) return;
 		if (noteID.value.trim() === '') {
+			const newFile = postFile(noteTitle.value, newFolderId);
+			if (!newFile) {
+				Notify('Error: Cannot add new note', 'error');
+				return;
+			}
+
+			const newNote = postNote(newFile.id, noteContent.value);
+			if (!newNote) {
+				deleteFile(newFile.id, newFolderId);
+				Notify('Error: Cannot add new note', 'error');
+				return;
+			}
+
 			const folder = folders.value.find(f => f.id === newFolderId);
-			const newFile = {
-				id: 'F-123',
-				name: 'New Note',
-			};
 			folder.files.push(newFile);
 			folder.files = sortByNameAsc(folder.files);
-			
-			const newFileContent = {
-				id: 'F-123',
-				name: 'New Note',
-				content: noteContent.value,
-			};
-			filesContent.value.push(newFileContent);
 
-			noteID.value = 'F-123';
+			noteID.value = newFile.id;
 			saveStatus.value = true;
 		}
 		else {
 			if (newFolderId !== folderId.value) {
+				const flag = updateFile(fileChange.id, fileChange.name, newFolderId);
+				if (!flag) {
+					Notify('Error: Cannot change note\'folder', 'error');
+					return;
+				}
+
 				RemoveFile(fileChange.id, folderId.value);
 				const folder = folders.value.find(f => f.id === newFolderId);
 				const newFile = reactive({
@@ -237,11 +294,12 @@
 	}
 
 	function AddNewFolder() {
-		const newFolder = {
-			id: 'F-' + (folders.value.length + 1),
-			name: 'New Folder',
-			files: [],
-		};
+		const newFolder = postFolder();
+		if (!newFolder) {
+			Notify('Error: Cannot add new folder', 'error');
+			return;
+		}
+		newFolder.files = [];
 		folders.value.unshift(newFolder);
 		folderButtons.value[0]?.ActiveEditName();
 	}

@@ -1,8 +1,8 @@
 <template>
     <div class="notebook-wrapper" >
-        <!-- <textarea class="title-textarea" placeholder="Tiêu đề..." :value="title" v-on:keydown.tab.prevent="tabIndent" @input="editNote"></textarea>
+        <textarea ref="title" class="title-textarea" placeholder="Title..." v-on:keydown.tab.prevent="tabIndent" @blur="editTitle"></textarea>
 		<br>
-		<hr> -->
+		<hr>
         <div ref="textarea" contenteditable="true" id="note-editor" class="lined-textarea" placeholder="Nội dung..." v-on:keydown.tab.prevent="tabIndent" @click="" @input="editNote" @mousedown="">
 
 		</div>
@@ -67,8 +67,9 @@
 	defineExpose({openFile, executeCommand});
 
 	//var
+	const title = ref(null);
 	const textarea = ref(null);
-	const emits = defineEmits(['editNote', 'notify']);
+	const emits = defineEmits(['editNote', 'notify', 'editTitle']);
 	const historyLimit = 24;
 	const historyIndex = ref(0);
 	const history = ref([]);
@@ -104,7 +105,14 @@
 		document.execCommand('insertText', false, '\t')
 	}
 
-	function openFile(content) {
+	function openFile(titl, content) {
+		if (titl === null || titl.trim() === '') {
+			title.value.value= null;
+		}
+		else {
+			title.value.value = titl;
+		}
+
 		if (content === null) {
 			textarea.value.innerHTML = '';
 		}
@@ -116,6 +124,10 @@
 		}
 
 		startHistory();
+	}
+
+	function editTitle(e) {
+		emits('editTitle', e.target.value);
 	}
 
 	function startHistory() {
@@ -920,6 +932,7 @@
     flex: 1;
     font-size: 42px;
     line-height: 50px;
+	font-weight: bold;
     padding: 0 20px;
     border: none;
     outline: none;
