@@ -1,7 +1,7 @@
 <script>
     import axios from 'axios';
 
-    const defaultUrl = 'https://localhost';
+    const defaultUrl = 'http://localhost:8080';
     const defaultHeader = {};
 
     export function getFolders() {

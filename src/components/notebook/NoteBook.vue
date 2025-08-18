@@ -51,34 +51,6 @@
     //Note Organizer Data
 	const enableFolderHier = ref(false);
 	const folders = ref([
-		{
-			id: 'F-1',
-			name: 'Folder A',
-			files: [
-				{
-				name: 'File 1',
-				id: 'ABC-123',
-				},
-				{
-				name: 'File 2',
-				id: 'DEF-456',
-				}
-			],
-		},
-		{
-			id: 'F-2',
-			name: 'Folder B',
-			files: [
-				{
-				name: 'File 3',
-				id: 'ABCD-1234',
-				},
-				{
-				name: 'File 4',
-				id: 'DEFG-4567',
-				}
-			],
-		},
 	]);
 	const folderButtons = ref([]);
 	//File Change Folder Data
