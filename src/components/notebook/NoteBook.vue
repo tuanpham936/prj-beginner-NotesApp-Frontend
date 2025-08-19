@@ -67,21 +67,22 @@
 	const sidebar = ref(null);
 
 	//Start
-	onMounted(() => {
-		folders.value.splice(0);
-		folders.value = getFolders(); 
+	onMounted(async () => {
+		// folders.value.splice(0);
+		folders.value = await getFolders(); 
 		if (!folders.value) {
 			Notify('Error: Cannot get folders', 'error');
 			folders.value = [];
 			return;
 		}
-		folders.value.forEach(folder => {
-			folder.files = getFilesByFolderId(folder.id);
-			if (!folder.files) {
-				Notify('Error: Cannot get note in folders', 'alert');
+		folders.value.forEach(async (folder) => {
+			const data = await getFilesByFolderId(folder.id);
+			if (!data) {
+				Notify('Error: Cannot get note in folders', 'error');
 				folder.files = [];
 				return;
 			}
+			folder.files = data;
 		})
 	});
 
@@ -107,8 +108,8 @@
 		noteContent.value = newNote;
 	}
 
-	function UpdateFolderName(id, newName) {
-		const flag = updateFolder(id, newName);
+	async function UpdateFolderName(id, newName) {
+		const flag = await updateFolder(id, newName);
 		if (!flag) {
 			Notify('Error: Cannot update folder name', 'error');
 			return;
@@ -118,12 +119,12 @@
 		folders.value = sortByNameAsc(folders.value);
 	}
 
-	function RemoveFolder(id) {
+	async function RemoveFolder(id) {
 		const folder = folders.value.find(f => f.id === id);
 		folder.files.forEach(file => {
 			RemoveFile(file.id);
 		});
-		const flag = deleteFolder(id);
+		const flag = await deleteFolder(id);
 		if (!flag) {
 			Notify('Error: Cannot remove folder', 'error');
 			return;
@@ -169,11 +170,11 @@
 	function RemoveFile(fileID, id) {
 		const folder = folders.value.find(f => f.id === id);
 		const file = folder.files.find(f => f.id === fileID);
-		const flag2 = deleteNote(fileID);
-		if (!flag2) {
-			Notify('Error: Cannot remove note', 'error');
-			return;
-		}
+		// const flag2 = deleteNote(fileID);
+		// if (!flag2) {
+		// 	Notify('Error: Cannot remove note', 'error');
+		// 	return;
+		// }
 		const flag1 = deleteFile(fileID, id);
 		if (!flag1) {
 			Notify('Error: Cannot remove note', 'error');
@@ -217,21 +218,21 @@
 		enableChooseFolderModal.value = false;
 	}
 
-	function ChooseFolder(newFolderId) {
+	async function ChooseFolder(newFolderId) {
 		if (newFolderId === null) return;
 		if (noteID.value.trim() === '') {
-			const newFile = postFile(noteTitle.value, newFolderId);
+			const newFile = await postFile(noteTitle.value, newFolderId);
 			if (!newFile) {
 				Notify('Error: Cannot add new note', 'error');
 				return;
 			}
 
-			const newNote = postNote(newFile.id, noteContent.value);
-			if (!newNote) {
-				deleteFile(newFile.id, newFolderId);
-				Notify('Error: Cannot add new note', 'error');
-				return;
-			}
+			// const newNote = postNote(newFile.id, noteContent.value);
+			// if (!newNote) {
+			// 	deleteFile(newFile.id, newFolderId);
+			// 	Notify('Error: Cannot add new note', 'error');
+			// 	return;
+			// }
 
 			const folder = folders.value.find(f => f.id === newFolderId);
 			folder.files.push(newFile);
@@ -242,7 +243,7 @@
 		}
 		else {
 			if (newFolderId !== folderId.value) {
-				const flag = updateFile(fileChange.id, fileChange.name, newFolderId);
+				const flag = await updateFile(fileChange.id, fileChange.name, newFolderId);
 				if (!flag) {
 					Notify('Error: Cannot change note\'folder', 'error');
 					return;
@@ -265,8 +266,8 @@
 		return list.slice().sort((a, b) => a.name.localeCompare(b.name));
 	}
 
-	function AddNewFolder() {
-		const newFolder = postFolder();
+	async function AddNewFolder() {
+		const newFolder = await postFolder();
 		if (!newFolder) {
 			Notify('Error: Cannot add new folder', 'error');
 			return;
