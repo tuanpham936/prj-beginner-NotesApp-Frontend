@@ -174,7 +174,7 @@
         };
     }
 
-    export async function updateFile(fileId, fileName, folderId) {
+    export async function updateFile(fileId, fileName, folderid) {
         try {
             console.log('Update File');
             const response = await axios({
@@ -184,7 +184,7 @@
                 data: {
                     id: fileId,
                     name: fileName,
-                    folderID: folderId,
+                    folderId: folderid,
                 },
             })
             if (response.status === 200) {
@@ -207,7 +207,7 @@
         };
     }
 
-    export async function deleteFile(fileId, folderId) {
+    export async function deleteFile(fileId, folderid) {
         try {
             console.log('Delete File');
             const response = await axios({
@@ -217,7 +217,7 @@
                 data: {
                     id: fileId,
                     name: null,
-                    folderID: folderId,
+                    folderId: folderid,
                 },
             })
             if (response.status === 200) {

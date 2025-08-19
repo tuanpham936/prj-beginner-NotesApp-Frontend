@@ -66,6 +66,9 @@
 	//Sidebar
 	const sidebar = ref(null);
 
+	//Choose Folder
+	const cfmstate = ref('');
+
 	//Start
 	onMounted(async () => {
 		// folders.value.splice(0);
@@ -76,6 +79,7 @@
 			return;
 		}
 		folders.value.forEach(async (folder) => {
+			folder.files = [];
 			const data = await getFilesByFolderId(folder.id);
 			if (!data) {
 				Notify('Error: Cannot get note in folders', 'error');
@@ -86,14 +90,14 @@
 		})
 	});
 
-	function UpdateTitle(newTitle) {
+	async function UpdateTitle(newTitle) {
 		noteTitle.value = newTitle;
 
 		if (noteID.value === '') return;
 		
 		const folder = folders.value.find(fd => fd.files.find(fl => fl.id === noteID.value));
 
-		const flag = updateFile(noteID.value, newTitle, folder.id);
+		const flag = await updateFile(noteID.value, newTitle, folder.id);
 		if (!flag) {
 			Notify('Error: Cannot update note title', 'error');
 			return;
@@ -140,14 +144,14 @@
 		fileChange.id = file.id;
 		fileChange.name = file.name;
 		folderId.value = id;
-		ActiveModal();
+		ActiveModal('changefolder');
 	}
 
 	function SaveFile() {
 		if (saveStatus.value) return;
 
 		if (noteID.value.trim() === '') {
-			ActiveModal();
+			ActiveModal('newfile');
 		}
 		else {
 			const flag = updateNote(noteID.value, noteContent.value);
@@ -167,23 +171,22 @@
 		return saveStatus.value;
 	}
 
-	function RemoveFile(fileID, id) {
-		const folder = folders.value.find(f => f.id === id);
-		const file = folder.files.find(f => f.id === fileID);
-		// const flag2 = deleteNote(fileID);
-		// if (!flag2) {
-		// 	Notify('Error: Cannot remove note', 'error');
-		// 	return;
-		// }
-		const flag1 = deleteFile(fileID, id);
-		if (!flag1) {
-			Notify('Error: Cannot remove note', 'error');
-			return;
-		}
+	function RemoveFileLocal(fileID, fdId) {
+		const folder = folders.value.find(f => f.id === fdId);
+		// const file = folder.files.find(f => f.id === fileID);
 		const index = folder.files.findIndex(f => f.id == fileID);
 		if (folder.files[index].id === noteID.value) noteID.value = '';
 		folder.files.splice(index, 1);
 		folder.files = sortByNameAsc(folder.files);
+	}
+
+	function RemoveFile(fileID, fdId) {
+		const flag1 = deleteFile(fileID, fdId);
+		if (!flag1) {
+			Notify('Error: Cannot remove note', 'error');
+			return;
+		}
+		RemoveFileLocal(fileID, fdId);
 	}
 
 	function OpenFile(fileID, fileTitle) {
@@ -210,7 +213,8 @@
 		saveStatus.value = true;
 	}
 
-	function ActiveModal() {
+	function ActiveModal(state) {
+		cfmstate.value = state;
 		enableChooseFolderModal.value = true;
 	}
 
@@ -220,7 +224,7 @@
 
 	async function ChooseFolder(newFolderId) {
 		if (newFolderId === null) return;
-		if (noteID.value.trim() === '') {
+		if (cfmstate.value === 'newfile') {
 			const newFile = await postFile(noteTitle.value, newFolderId);
 			if (!newFile) {
 				Notify('Error: Cannot add new note', 'error');
@@ -241,7 +245,7 @@
 			noteID.value = newFile.id;
 			saveStatus.value = true;
 		}
-		else {
+		else if (cfmstate.value === 'changefolder') {
 			if (newFolderId !== folderId.value) {
 				const flag = await updateFile(fileChange.id, fileChange.name, newFolderId);
 				if (!flag) {
@@ -249,7 +253,7 @@
 					return;
 				}
 
-				RemoveFile(fileChange.id, folderId.value);
+				RemoveFileLocal(fileChange.id, folderId.value);
 				const folder = folders.value.find(f => f.id === newFolderId);
 				const newFile = reactive({
 					id: fileChange.id,
