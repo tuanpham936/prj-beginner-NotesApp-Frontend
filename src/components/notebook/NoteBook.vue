@@ -189,7 +189,7 @@
 		RemoveFileLocal(fileID, fdId);
 	}
 
-	function OpenFile(fileID, fileTitle) {
+	async function OpenFile(fileID, fileTitle) {
 		if (!CheckSaveStatus()) return;
 
 		if (fileID === null) {	
@@ -199,7 +199,7 @@
 			noteEditor.value?.openFile(null, null);
 		}
 		else {
-			const openNoteContent = getNote(fileID);
+			const openNoteContent = await getNote(fileID);
 			if (!openNoteContent) {
 				Notify('Error: Cannot open note', 'error');
 				return;

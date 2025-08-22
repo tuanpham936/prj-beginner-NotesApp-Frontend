@@ -240,26 +240,27 @@
         };
     }
 
-    export function getNote(fileId) {
-        console.log('Get Note');
-        axios({
-            method: 'get',
-            url: defaultUrl + '/note/' + fileId,
-            responseType: 'blob',
-            headers: defaultHeader,
-        })
-        .then(response => {
+    export async function getNote(fileId) {
+        try {
+            console.log('Get Note');
+            const response = await axios({
+                method: 'get',
+                url: defaultUrl + '/note/' + fileId,
+                responseType: 'blob',
+                headers: defaultHeader,
+            })
             console.log('Get Note success');
             return response.data.text();
-        })
-        .catch(error => {
+        }
+        catch(error) {
+            console.log('Get Note failed');
             if (error.response) {
                 console.error('HTTP error: ', error.response.data);
             } else {
                 console.error('Network error:', error.message);
             }
             return false;
-        });
+        };
     }
 
     export function postNote(fileId, noteContent) {
