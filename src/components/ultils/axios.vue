@@ -263,45 +263,41 @@
         };
     }
 
-    export function postNote(fileId, noteContent) {
-        console.log('Post new note');
-        
-        const chunkSize = 1000;
-        const totalChunks = Math.ceil(noteContent.length / chunkSize);
+    export async function postNote(fileId, noteContent) {
+        try {
+            console.log('Post new note');
+            
+            const blob = new Blob([noteContent], { type: "text/plain" });
+            const file = new File([blob], fileId + ".txt", { type: "text/plain" });
 
-        for (let i = 0; i < totalChunks; i++) {
-            const chunk = noteContent.slice(i * chunkSize, (i + 1) * chunkSize);
-            axios({
+            // gửi bằng axios
+            const formData = new FormData();
+            formData.append("note", file);
+
+            const response = await axios({
                 method: 'post',
                 url: defaultUrl + '/note/' + fileId,
                 headers: defaultHeader,
-                data: {
-                    index: i,
-                    total: totalChunks,
-                    content: chunk,
-                },
+                data: formData,
             })
-            .then(response => {
-                if (response.status === 201) {
-                    console.log('Post new note chunk success');
-                }
-                else {
-                    console.log(response.status, ' ', response.statusText);
-                    return false;
-                }
-            })
-            .catch(error => {
-                if (error.response) {
-                    console.error('HTTP error: ', error.response.data);
-                } else {
-                    console.error('Network error:', error.message);
-                }
+            if (response.status === 201) {
+                console.log('Post new note success');
+                return true;
+            }
+            else {
+                console.log(response.status, ' ', response.statusText);
                 return false;
-            });
+            }
         }
-
-        console.log('Post new note success');
-        return true;
+        catch(error) {
+                console.log('Post new note failed');
+            if (error.response) {
+                console.error('HTTP error: ', error.response.data);
+            } else {
+                console.error('Network error:', error.message);
+            }
+            return false;
+        }        
     }
 
     export function updateNote(fileId, noteContent) {

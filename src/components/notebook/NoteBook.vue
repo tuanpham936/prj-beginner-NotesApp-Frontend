@@ -231,12 +231,12 @@
 				return;
 			}
 
-			// const newNote = postNote(newFile.id, noteContent.value);
-			// if (!newNote) {
-			// 	deleteFile(newFile.id, newFolderId);
-			// 	Notify('Error: Cannot add new note', 'error');
-			// 	return;
-			// }
+			const newNote = await postNote(newFile.id, noteContent.value);
+			if (!newNote) {
+				deleteFile(newFile.id, newFolderId);
+				Notify('Error: Cannot add new note', 'error');
+				return;
+			}
 
 			const folder = folders.value.find(f => f.id === newFolderId);
 			folder.files.push(newFile);
