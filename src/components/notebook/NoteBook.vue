@@ -38,7 +38,7 @@
 	import message from '../ultils/Message.vue';
 	import { onMounted, ref, watch } from 'vue'; //Declare primitive variables
 	import { reactive } from 'vue'; //Declare object, array variables
-	import { getFolders, postFolder, updateFolder, deleteFolder, getFilesByFolderId, postFile, updateFile, deleteFile, postNote, getNote, updateNote, deleteNote } from '../ultils/axios.vue'
+	import { getFolders, postFolder, updateFolder, deleteFolder, getFilesByFolderId, postFile, updateFile, deleteFile, postNote, getNote, updateNote } from '../ultils/axios.vue'
 
 	//data
     //Note data
@@ -124,10 +124,10 @@
 	}
 
 	async function RemoveFolder(id) {
-		const folder = folders.value.find(f => f.id === id);
-		folder.files.forEach(file => {
-			RemoveFile(file.id);
-		});
+		// const folder = folders.value.find(f => f.id === id);
+		// folder.files.forEach(file => {
+		// 	RemoveFile(file.id);
+		// });
 		const flag = await deleteFolder(id);
 		if (!flag) {
 			Notify('Error: Cannot remove folder', 'error');
@@ -147,14 +147,14 @@
 		ActiveModal('changefolder');
 	}
 
-	function SaveFile() {
+	async function SaveFile() {
 		if (saveStatus.value) return;
 
 		if (noteID.value.trim() === '') {
 			ActiveModal('newfile');
 		}
 		else {
-			const flag = updateNote(noteID.value, noteContent.value);
+			const flag = await updateNote(noteID.value, noteContent.value);
 			if (!flag) {
 				Notify('Error: Cannot save note', 'error');
 				return;

@@ -270,7 +270,6 @@
             const blob = new Blob([noteContent], { type: "text/plain" });
             const file = new File([blob], fileId + ".txt", { type: "text/plain" });
 
-            // gửi bằng axios
             const formData = new FormData();
             formData.append("note", file);
 
@@ -300,71 +299,67 @@
         }        
     }
 
-    export function updateNote(fileId, noteContent) {
-        console.log('Update Note');
-        
-        const chunkSize = 1000;
-        const totalChunks = Math.ceil(noteContent.length / chunkSize);
+    export async function updateNote(fileId, noteContent) {
+        try {
+            console.log('Update Note');
+            
+            const blob = new Blob([noteContent], { type: "text/plain" });
+            const file = new File([blob], fileId + ".txt", { type: "text/plain" });
 
-        for (let i = 0; i < totalChunks; i++) { 
-            const chunk = noteContent.slice(i * chunkSize, (i + 1) * chunkSize);
-            axios({
-                method: 'update',
+            const formData = new FormData();
+            formData.append("note", file);
+        
+            const response = await axios({
+                method: 'put',
                 url: defaultUrl + '/note/' + fileId,
                 headers: defaultHeader,
-                data: {
-                    index: i,
-                    total: totalChunks,
-                    content: chunk,
-                },
-            })
-            .then(response => {
-                if (response.status === 200) {
-                    console.log('Update Note chunk success');
-                }
-                else {
-                    console.log(response.status, ' ', response.statusText);
-                    return false;
-                }
-            })
-            .catch(error => {
-                if (error.response) {
-                    console.error('HTTP error: ', error.response.data);
-                } else {
-                    console.error('Network error:', error.message);
-                }
-                return false;
+                data: formData,
             });
-        }
 
-        console.log('Update Note success');
-        return true;
-    }
-
-    export function deleteNote(fileId) {
-        console.log('Delete Note');
-        axios({
-            method: 'delete',
-            url: defaultUrl + '/note/' + fileId,
-            headers: defaultHeader,
-        })
-        .then(response => {
             if (response.status === 200) {
-                console.log('Delete Note success');
+                console.log('Update Note success');
                 return true;
             }
             else {
                 console.log(response.status, ' ', response.statusText);
                 return false;
             }
-        })
-        .catch(error => {
+        }
+        catch(error) {
+            console.log('Update Note failed');
             if (error.response) {
                 console.error('HTTP error: ', error.response.data);
             } else {
                 console.error('Network error:', error.message);
             }
             return false;
-        });
+        };
     }
+    
+    // export function deleteNote(fileId) {
+    //     console.log('Delete Note');
+    //     axios({
+    //         method: 'delete',
+    //         url: defaultUrl + '/note/' + fileId,
+    //         headers: defaultHeader,
+    //     })
+    //     .then(response => {
+    //         if (response.status === 200) {
+    //             console.log('Delete Note success');
+    //             return true;
+    //         }
+    //         else {
+    //             console.log(response.status, ' ', response.statusText);
+    //             return false;
+    //         }
+    //     })
+    //     .catch(error => {
+    //         if (error.response) {
+    //             console.error('HTTP error: ', error.response.data);
+    //         } else {
+    //             console.error('Network error:', error.message);
+    //         }
+    //         return false;
+    //     });
+    // }
 </script>
